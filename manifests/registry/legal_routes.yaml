@@ -1,0 +1,27 @@
+# Канонические юридические маршруты
+version: 1
+
+routes:
+  privacy_policy:
+    canonical: /legal/privacy-policy.html
+    legacy: /p/privacy-policy.html
+    redirect: permanent_301
+
+  data_sources:
+    canonical: /legal/data-sources/
+    param: "?object={id}"
+    scope: all_ecosystem_sites
+
+  terms_of_use:
+    canonical: /legal/terms-of-use.html
+
+  ai_hints:
+    canonical: /ai-hints.txt
+
+  cookie_consent:
+    canonical: /legal/cookie-consent.html
+
+  takedown:
+    canonical: /legal/takedown.html
+    email: legal@blagorussia.ru
+    sla_hours: 24

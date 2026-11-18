@@ -1,0 +1,136 @@
+version: 1
+status: draft
+description: "Правила минимизации и redaction ПДн для публичного git, сайтов, JSON-LD, RSS и sitemap."
+owner: legal_reviewer
+last_updated: '2026-11-18'
+
+default_policy: deny
+
+rules:
+  - rule_id: REDACT_001
+    description: "Полное ФИО в публичном git заменяется на canonical_id или role placeholder."
+    pattern: full_name
+    action:
+      public_git: replace_with_canonical_id
+      jsonld: allowed_if_statement_on_file
+      rss: omit
+      sitemap: omit
+
+  - rule_id: REDACT_002
+    description: "Точная дата рождения не публикуется в git; публично допускается только год рождения."
+    pattern: birth_exact_date
+    action:
+      public_git: forbidden
+      public_site: birth_year_only
+      jsonld: omit
+      rss: omit
+      sitemap: omit
+
+  - rule_id: REDACT_003
+    description: "Адрес проживания не публикуется; допустим город или регион только при необходимости."
+    pattern: residence_address
+    action:
+      public_git: forbidden
+      public_site: city_or_region_only_if_necessary
+      jsonld: omit
+      rss: omit
+
+  - rule_id: REDACT_004
+    description: "Семейное положение не публикуется."
+    pattern: family_status
+    action:
+      public_git: forbidden
+      public_site: forbidden
+      jsonld: forbidden
+      rss: forbidden
+
+  - rule_id: REDACT_005
+    description: "Данные о детях не публикуются; имя несовершеннолетнего ребёнка не фиксируется."
+    pattern: children_details
+    action:
+      public_git: forbidden
+      public_site: forbidden
+      jsonld: forbidden
+      rss: forbidden
+      sitemap: forbidden
+
+  - rule_id: REDACT_006
+    description: "Политическая принадлежность не публикуется по умолчанию; историческое исключение только с legal review."
+    pattern: political_affiliation
+    action:
+      public_git: forbidden
+      public_site: forbidden_by_default
+      jsonld: forbidden
+      rss: forbidden
+      sitemap: forbidden
+
+  - rule_id: REDACT_007
+    description: "Личные email и телефон не публикуются; заменяются на форму обратной связи или организационный контакт."
+    pattern: personal_contacts
+    action:
+      public_git: forbidden
+      public_site: replace_with_form_or_org_contact
+      jsonld: omit
+      rss: omit
+
+  - rule_id: REDACT_008
+    description: "Государственные идентификаторы не публикуются."
+    pattern: government_identifiers
+    action:
+      public_git: forbidden
+      public_site: forbidden
+      jsonld: forbidden
+      rss: forbidden
+      sitemap: forbidden
+
+  - rule_id: REDACT_009
+    description: "Оригиналы фото не хранятся в публичном git; публично допускается только web-дериватив без EXIF и геолокации."
+    pattern: image_original
+    action:
+      public_git: forbidden
+      public_site: web_derivative_no_exif_no_geo
+      jsonld: url_only
+      rss: omit
+
+  - rule_id: REDACT_010
+    description: "Тексты заявлений и согласий не хранятся в публичном git; допускаются только статус и restricted_ref."
+    pattern: consent_or_statement_documents
+    action:
+      public_git: forbidden
+      public_site: forbidden
+      jsonld: forbidden
+      rss: forbidden
+
+  - rule_id: REDACT_011
+    description: "Латинические транслитерированные URL-слоги внешнего ресурса допустимы как ссылки, но не как PII-значения внутри git."
+    pattern: transliterated_url_slug
+    action:
+      public_git: allowed_as_external_reference
+      note: "Например, URL на nasa-istoria.blagorussia.ru допустим как ссылка; будущая миграция должна предусмотреть нейтральный slug и 301-редирект."
+
+  - rule_id: REDACT_012
+    description: "Organizational email допустим в identity_graph.public.yaml как metadata; в нормативных .md заменяется на ссылку на реестр."
+    pattern: organizational_email
+    action:
+      public_git_registry: allowed
+      public_git_normative_md: replace_with_registry_ref
+      git_author: forbidden
+
+  - rule_id: REDACT_013
+    description: "Legal и webmaster организационные контакты допустимы как институциональные маршруты, но не как git author email."
+    pattern: institutional_contact_email
+    action:
+      public_git_registry: allowed
+      public_git_normative_md: allowed_if_organizational
+      git_author: forbidden
+
+  - rule_id: REDACT_014
+    description: "Audit-файлы с ПДн исключаются из публичного дерева и заменяются на restricted_ref."
+    pattern: audit_file_with_pii
+    action:
+      public_git: restricted_ref_only
+      restricted_storage: encrypted_restricted
+      withdrawal_action:
+        - remove_from_public_tree
+        - preserve_restricted_copy
+        - record_audit_event

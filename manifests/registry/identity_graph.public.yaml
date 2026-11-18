@@ -1,0 +1,83 @@
+version: 1
+source_of_truth: restricted_identity_store
+visibility: public_minimized
+contains_raw_pii: false
+
+legal_framework:
+  personal_data: "152-ФЗ"
+  image_use: "ГК РФ ст. 152.1"
+  child_protection: "СК РФ ст. 54, 64"
+  special_categories_policy: "restricted_by_default"
+  note: "Лицензии AGPLv3 / CC BY-NC 4.0 / CC BY 4.0 / MIT не являются правовым основанием для обработки ПДн."
+
+access_control:
+  public_git_allowed:
+    - canonical_ids
+    - organizational_public_facts
+    - public_roles
+    - policy_metadata
+    - consent_status
+    - statement_status
+    - restricted_refs
+  public_git_forbidden:
+    - raw_pii
+    - special_categories_values
+    - minors_details
+    - personal_contacts
+    - government_identifiers
+    - image_originals
+    - consent_documents
+    - written_statements
+
+organizations:
+  np_obshchestvennoe_blagopoluchenie:
+    canonical_id: org:np-obshchestvennoe-blagopoluchenie
+    short_name: НП «Общественное благополучие»
+    public_facts:
+      founded: 2004-12-28
+      registered: 2005-01-12
+      jurisdiction: Воронежская область, г. Воронеж
+    contact:
+      organizational_email:
+        current: blagorussia@yandex.ru
+        type: partnerstvo_legacy_contact
+        planned_replacement: "@blagorussia.ru"
+        replacement_gate: SAN_stage_0
+        public_exposure: organizational_contact_only
+        git_author_use: forbidden
+
+  san_platform:
+    canonical_id: org:san-platform
+    short_name: САН
+    contour: B
+    owner_org: np_obshchestvennoe_blagopoluchenie
+    tech_owner: can-secure-dev
+    hosting_constraint: "Vercel compute only, NO PII storage"
+
+persons:
+  bobrov_av:
+    canonical_id: person:bobrov-av
+    public_roles:
+      - founder
+      - author
+    disclosure_basis:
+      type: written_statement
+      status: on_file
+      restricted_ref: restricted://statements/bobrov-av/2026-11-08
+      public_layer: minimized
+    processing_basis:
+      type: consent
+      status: on_file
+      restricted_ref: restricted://consents/bobrov-av/2026-11-08
+      purposes:
+        - membership_administration
+        - legal_recordkeeping
+        - biography_verification
+    redacted_fields:
+      - birth_exact_date
+      - residence_address
+      - family_status
+      - children_details
+      - political_affiliation
+      - personal_contacts
+    public_biography_ref: nasa-istoria.blagorussia.ru

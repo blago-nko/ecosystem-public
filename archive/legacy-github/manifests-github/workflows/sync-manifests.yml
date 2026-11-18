@@ -1,0 +1,69 @@
+name: Sync manifests metadata
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**.md"
+      - "docs/manifests.yaml"
+      - "scripts/sync_manifests.py"
+      - ".github/workflows/sync-manifests.yml"
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Run sync
+        run: python scripts/sync_manifests.py
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(INFRA): auto-sync manifests metadata"
+          title: "chore(INFRA): автоматическая синхронизация метаданных манифестов"
+          body: |
+            Автоматическая синхронизация метаданных манифестов.
+            
+            **Что изменилось:**
+            - Обновлены версии манифестов (minor +1) при изменении контента
+            - Обновлены даты последних редакций
+            - Обновлены content hash
+            - Синхронизированы сгенерированные блоки в README.md и docs/manifests.yaml
+            
+            Этот PR создан автоматически workflow `sync-manifests.yml`.
+          branch: "chore/auto-sync-manifests"
+          delete-branch: true
+          labels: "automated, chore"
+
+      - name: Enable Auto-Merge
+        continue-on-error: true
+        if: steps.cpr.outputs.pull-request-number != ''
+        run: |
+          echo "⏳ Включение автоматического мержа для PR #${{ steps.cpr.outputs.pull-request-number }}"
+          gh pr merge ${{ steps.cpr.outputs.pull-request-number }} --auto --squash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

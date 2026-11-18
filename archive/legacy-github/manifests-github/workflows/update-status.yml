@@ -1,0 +1,82 @@
+name: Auto-update STATUS.md
+
+# Автоматическое обновление timestamp в STATUS.md после merge в main
+# Источник требования: САМ v1.3 п. 1.5, СУМКа v1.5 п. 7.2
+# Метрика мониторинга: status_md_autoupdate_success_rate (цель ≥ 99%)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/STATUS.md'
+      - 'docs/manifests.yaml'
+      - 'domains-graph.yaml'
+      - 'scripts/update_status.py'
+      - 'docs/TASKS.md'
+      - 'blogger_image_metadata.json'
+  schedule:
+    # Каждые 6 часов для поддержания актуальности (только timestamp, без спама в журнале)
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Ручной запуск
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  update-status:
+    name: Update STATUS.md Timestamp
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check if STATUS.md exists
+        id: check
+        run: |
+          if [ -f "docs/STATUS.md" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "✅ docs/STATUS.md found"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️ docs/STATUS.md not found - skipping update"
+          fi
+      
+      - name: Regenerate STATUS.md
+        run: python scripts/update_status.py
+      - name: Validate STATUS.md structure
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          # Проверка обязательных разделов
+          REQUIRED_SECTIONS=("Состояние 14 доменов" "Состояние манифестов" "Ключевые метрики" "Активные риски")
+          
+          for section in "${REQUIRED_SECTIONS[@]}"; do
+            if grep -q "$section" docs/STATUS.md; then
+              echo "✅ Found section: $section"
+            else
+              echo "❌ Missing section: $section"
+              exit 1
+            fi
+          done
+      
+      - name: Create Pull Request
+        if: steps.check.outputs.exists == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "docs: auto-update STATUS.md timestamp"
+          title: "docs: автообновление timestamp в STATUS.md"
+          body: |
+            Автоматическое обновление даты в STATUS.md
+            
+            **Workflow run:** ${{ github.run_id }}  
+            **Trigger:** ${{ github.event_name }}
+            
+            Ref: САМ v1.3 п. 1.5, СУМКа v1.5 п. 7.2
+          branch: "chore/auto-update-status-md"
+          delete-branch: true
+          labels: "chore, automated"

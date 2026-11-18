@@ -1,0 +1,363 @@
+# Feature flags экосистемы blago-nko.
+# Строго stage-gated. Приоритет: надёжность перед скоростью, приватность перед автоматизацией.
+version: 1
+generated_from:
+  - stage_map.yaml
+  - crypto_policy.yaml
+  - storage_policy.yaml
+  - rights_registry.yaml
+  - documentation.yaml
+  - artifacts.yaml
+  - identity_graph.public.yaml
+  - restricted://audits/2026-11-san-manifest-audit/transfer-drift-notes.md
+
+principles:
+  reliability_over_speed: true
+  stage_gated: true
+  manual_deploy_required: true
+  no_auto_publish_on_push: true
+  pii_minimization: true
+  consent_aware_publication: true
+  mobile_first_planning: true
+  non_commercial_terminology: true
+
+stages:
+  stage_minus_1:
+    description: "подготовка, статика, документация, без ПДн"
+    pdn: forbidden
+    allowed_flag_ids:
+      - static_public_content
+      - documentation_registry
+    forbidden_flag_ids:
+      - manual_lead_collection_with_consent
+      - lead_auto
+      - reso
+      - external_content_feeds
+      - cma_reports
+      - video_multi_publish
+      - white_label
+      - managed_deployment
+      - data_partner_access
+      - personal_data_feeds
+
+  stage_0:
+    description: "RF gateway, encrypted collection, hashes only в внешних хранилищах"
+    pdn_policy: rf_gateway_only
+    allowed_flag_ids:
+      - static_public_content
+      - documentation_registry
+      - manual_lead_collection_with_consent
+    forbidden_flag_ids:
+      - lead_auto
+      - reso
+      - external_content_feeds
+      - cma_reports
+      - video_multi_publish
+      - white_label
+      - managed_deployment
+      - data_partner_access
+      - personal_data_feeds
+      - plaintext_pii_storage
+      - supabase_plain_pii
+
+  stage_1:
+    description: "операционный контур САН, аналитика, фиды, RESO при соглашениях"
+    allowed_flag_ids:
+      - static_public_content
+      - documentation_registry
+      - manual_lead_collection_with_consent
+      - lead_auto
+      - reso
+      - external_content_feeds
+      - cma_reports
+      - video_multi_publish
+    forbidden_flag_ids:
+      - white_label
+      - managed_deployment
+      - data_partner_access
+      - personal_data_feeds
+      - public_jsonld_special_categories
+      - video_storage_in_r2
+
+  stage_2:
+    description: "партнёрские интеграции, managed deployment, white label, расширенный аудит"
+    allowed_flag_ids:
+      - static_public_content
+      - documentation_registry
+      - manual_lead_collection_with_consent
+      - lead_auto
+      - reso
+      - external_content_feeds
+      - cma_reports
+      - video_multi_publish
+      - white_label
+      - managed_deployment
+      - data_partner_access
+    forbidden_flag_ids:
+      - personal_data_feeds
+      - public_jsonld_special_categories
+      - plaintext_pii_in_third_party_storage
+      - ai_crawlers_for_personal_data
+
+flags:
+  static_public_content:
+    enabled_from_stage: -1
+    description: "публичные статические страницы без ПДн"
+    dependencies: []
+    notes: "документация, карточки без персональных данных, общие legal pages"
+
+  documentation_registry:
+    enabled_from_stage: -1
+    description: "машиночитаемые реестры manifests/registry"
+    dependencies:
+      - manifests.yaml
+      - ownership.yaml
+      - rights_registry.yaml
+      - crypto_policy.yaml
+      - storage_policy.yaml
+      - stage_map.yaml
+      - terminology.yaml
+      - domain_rename_map.yaml
+      - legal_routes.yaml
+      - identity_graph.public.yaml
+      - documentation.yaml
+      - artifacts.yaml
+      - feature_flags.yaml
+      - comment_policy.yaml
+      - product_catalog.yaml
+
+  manual_lead_collection_with_consent:
+    enabled_from_stage: 0
+    description: "сбор лидов через форму с явным согласием, RF gateway, шифрование"
+    pii_policy: rf_gateway_only
+    storage:
+      encrypted_payload: yandex_object_storage_or_managed_postgres_rf
+      supabase_allowed_fields:
+        - lead_id
+        - property_id
+        - agent_id
+        - phone_hash
+        - email_hash
+        - consent_id
+        - status
+        - created_at
+      supabase_forbidden_fields:
+        - phone_encrypted
+        - email_encrypted
+        - address_text
+        - client_name
+        - ip_plaintext
+        - user_agent_plaintext
+    consent_required: true
+    forbidden_exports:
+      - plain_pii
+      - public_jsonld
+      - ai_crawlers
+      - partner_reports_without_agreement
+
+  lead_auto:
+    enabled_from_stage: 1
+    description: "автоматическая обработка лидов, маршрутизация, статусы"
+    depends_on:
+      - manual_lead_collection_with_consent
+    pii_policy: rf_gateway_only
+    audit_required: true
+    forbidden_exports:
+      - plain_pii
+      - personal_data_feeds
+      - ai_crawlers
+
+  reso:
+    enabled_from_stage: 1
+    description: "RESO Data Dictionary / обмен объектами недвижимости"
+    depends_on:
+      - partner_agreement
+      - rights_registry
+    scope: property_facts_only
+    pii_in_payload: forbidden
+    third_party_source_materials: rights_reserved_or_verified_license
+    notes: >-
+      RESO не является основанием для передачи ПДн. Только объектные данные,
+      источники, лицензии, атрибуты изображения/плана по rights_registry.yaml.
+
+  external_content_feeds:
+    enabled_from_stage: 1
+    description: "RSS/Atom/JSON feeds для публичного не-персонального контента"
+    scope:
+      - site_content
+      - non_personal_metadata
+      - licensed_media_references
+    forbidden_always:
+      - personal_data_feeds
+      - identity_graph_exports
+      - biography_special_categories
+    rights_gate:
+      san_original: CC BY-NC 4.0
+      vac_text: CC BY 4.0
+      vac_code: MIT
+      third_party: rights_reserved_or_verified_license
+    notes: >-
+      Фиды контента допустимы с stage 1. Фиды персональных данных запрещены всегда.
+
+  cma_reports:
+    enabled_from_stage: 1
+    description: "аналитические материалы CMA по партнёрскому соглашению"
+    terminology:
+      public_wording: "аналитические материалы по соглашению"
+      forbidden_wording:
+        - продажа отчётов
+        - коммерческий тариф
+        - цена отчёта
+    depends_on:
+      - partner_agreement
+      - rights_registry
+      - external_content_feeds
+    derivative_policy: >-
+      Оригинальный контент САН лицензируется CC BY-NC 4.0 без ND, чтобы допускать
+      переводы, ремиксы и AI-обработку в некоммерческих/партнёрских сценариях по соглашению.
+      Сторонние исходные материалы остаются rights_reserved и требуют отдельного gate.
+    report_allowed: conditional
+    ai_crawler_allowed: false
+    personal_data_allowed: false
+
+  video_multi_publish:
+    enabled_from_stage: 1
+    description: "публикация видео на нескольких площадках"
+    gates:
+      embed_health_check:
+        required: true
+        evidence:
+          youtube: >-
+            KB: signed-out message + watch history influence recommendations +
+            error retrieving sharing information.
+          rutube: >-
+            KB: «Что-то сломалось, уже чиним».
+        action_before_enable: "проверить живость embed и fallback-ссылку"
+      privacy_notice:
+        required_if_embed: true
+        reason: >-
+          YouTube embed может влиять на watch history и рекомендации посетителя.
+          Для сайта НКО это нежелательный трекинг третьей стороной.
+      preferred_alternative:
+        - text_description_plus_direct_link
+        - self_hosted_poster_with_consent_click
+    storage_policy:
+      r2_video_files: forbidden
+      reference: storage_policy.yaml
+    notes: >-
+      Видео-контур включается только после health check и privacy notice.
+      При сомнении использовать текстовое описание и ссылку вместо embed.
+
+  white_label:
+    enabled_from_stage: 2
+    description: "белый лейбл для партнёров"
+    depends_on:
+      - managed_deployment
+      - partner_agreement
+      - data_partner_access
+    branding_constraints:
+      attribution_required: true
+      license_display_required: true
+      legal_pages_required: true
+
+  managed_deployment:
+    enabled_from_stage: 2
+    description: "управляемое развёртывание для партнёров"
+    depends_on:
+      - workflow_dispatch
+      - environment_approval
+      - secret_store
+    deployment_model:
+      auto_publish_on_push: false
+      manual_approval_required: true
+      publish_stage: pending_and_waiting_for_approval
+
+  data_partner_access:
+    enabled_from_stage: 2
+    description: "доступ партнёров к данным по соглашению"
+    pii_policy: no_plaintext_pii
+    allowed_fields:
+      - hashed_references
+      - object_ids
+      - consent_ids
+      - aggregate_metrics
+    forbidden_fields:
+      - phone_plain
+      - email_plain
+      - address_text
+      - client_name
+      - political_affiliation
+      - minor_family_member
+    audit_required: true
+
+  personal_data_feeds:
+    status: forbidden
+    enabled_from_stage: null
+    description: "фиды, содержащие персональные данные или особые категории"
+    reference: identity_graph.public.yaml access_control.forbidden_exports
+    notes: >-
+      Запрещено на всех этапах, включая stage 2. Исключений нет без нового
+      письменного основания и расширения scope заявления.
+
+  public_jsonld_special_categories:
+    status: minimized_only_by_default
+    enabled_from_stage: null
+    description: "публичный JSON-LD с особыми категориями ПДн"
+    reference:
+      - identity_graph.public.yaml access_control.jsonld_policy
+      - documentation.yaml jsonld_policy.consent_aware_rule
+    allowed_only_if:
+      - explicit_scope_expansion_in_written_statement
+      - legal_review_passed
+      - takedown_procedure_ready
+    notes: >-
+      По умолчанию публичный JSON-LD содержит только minimized-слой.
+      Политическая деятельность, сведения о несовершеннолетнем ребёнке,
+      residence и dob не сериализуются в Person/ProfilePage без расширения scope.
+
+deployment_gates:
+  required_before_publish:
+    - manifest-consistency-check
+    - architecture-check
+    - license-check
+    - markdown-lint
+    - pr-prefix-check
+    - tests
+  tests:
+    matrix:
+      os:
+        - ubuntu-latest
+      python:
+        - "3.11"
+        - "3.12"
+    multi_container:
+      required_for: stage_0_pii_gateway
+      mechanism: docker-compose
+      services:
+        - web
+        - db
+  approval:
+    workflow_dispatch: required
+    environment_approval: required
+    publish_behavior: pending_and_waiting_for_approval
+    rationale: >-
+      KB-скриншот matrix-build-deploy.yml показывает Publish как pending and waiting
+      for approval. Это соответствует принципу надёжность перед скоростью.
+  secrets:
+    store: github_actions_secret_store
+    levels:
+      - repository
+      - environment
+      - organization
+    rf_gateway_keys:
+      storage: organization_level_secret
+      never_in_git: true
+
+forbidden_everywhere:
+  - personal_data_feeds
+  - plaintext_pii_in_public_git
+  - plaintext_pii_in_supabase
+  - ai_crawlers_for_personal_data
+  - public_jsonld_special_categories_without_scope
+  - video_files_in_r2
+  - auto_publish_on_push_for_stage_gated_deployments

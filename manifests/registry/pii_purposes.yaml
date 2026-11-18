@@ -1,0 +1,71 @@
+version: 1
+status: draft
+description: "Справочник целей обработки и публичного размещения ПДн."
+owner: legal_reviewer
+last_updated: '2026-11-18'
+
+purposes:
+  PURPOSE_PUBLIC_BIOGRAPHY:
+    title: "Публичная биография основателя или персоны"
+    sites:
+      - nasa_istoria
+      - partnerstvo
+    requires_written_statement: true
+    requires_consent_for_internal_processing: true
+    special_categories_policy: forbidden_unless_explicit_statement_and_legal_review
+    public_git: forbidden
+
+  PURPOSE_MEMBERSHIP_ADMINISTRATION:
+    title: "Администрирование членства и партнёрских отношений"
+    sites:
+      - partnerstvo
+    internal_only: true
+    requires_consent: true
+    public_disclosure: false
+
+  PURPOSE_LEGAL_RECORDKEEPING:
+    title: "Юридическое архивирование и доказательственный контур"
+    internal_only: true
+    requires_legal_basis: true
+    retention_override_possible: true
+
+  PURPOSE_IMAGE_USE:
+    title: "Публикация изображения"
+    requires_image_consent_or_statement: true
+    gk_basis: RF_GK_ART152_1
+    public_git_original: forbidden
+    public_site_derivative: conditional
+
+  PURPOSE_CHILD_PROTECTION:
+    title: "Учёт интересов несовершеннолетнего члена семьи"
+    default_public: forbidden
+    requires_guardian_consent: true
+    minimization_mandatory: true
+    legal_review_required: true
+    sk_basis:
+      - RF_SK_ART54
+      - RF_SK_ART64
+
+  PURPOSE_ORGANIZATIONAL_CONTACT:
+    title: "Организационная коммуникация"
+    data_type: organizational_contact
+    personal_data_assessment: requires_review
+    public_git: conditional_registry_only
+    public_site: conditional
+
+  PURPOSE_ARCHITECTURE_GOVERNANCE:
+    title: "Системная архитектура, роли, нормативные связи"
+    sites:
+      - sam
+    allowed_field_groups:
+      - identity_public_minimized
+      - organizational
+      - roles
+      - policy_metadata
+    denied_field_groups:
+      - demographic_exact
+      - family
+      - minors
+      - special_categories
+      - personal_contacts
+      - government_identifiers

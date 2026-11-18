@@ -1,0 +1,101 @@
+version: 1
+status: draft
+description: "Справочник юридических оснований для матрицы ПДн. Требует подтверждения legal reviewer."
+owner: legal_reviewer
+last_updated: '2026-11-18'
+
+legal_bases:
+  RF_152_FZ_ART5_P2:
+    title: "Ограничение обработки конкретными, заранее определёнными и законными целями"
+    law: "152-ФЗ"
+    article: "ст. 5"
+    part: "ч. 2"
+    effect: purpose_limitation
+
+  RF_152_FZ_ART5_P4:
+    title: "Обработке подлежат только ПДн, отвечающие целям обработки"
+    law: "152-ФЗ"
+    article: "ст. 5"
+    part: "ч. 4"
+    effect: data_minimization
+
+  RF_152_FZ_ART5_P6:
+    title: "Хранение в форме, позволяющей определить субъекта, не дольше чем требует цель"
+    law: "152-ФЗ"
+    article: "ст. 5"
+    part: "ч. 6"
+    effect: storage_limitation
+
+  RF_152_FZ_ART5_P7:
+    title: "Уничтожение ПДн по достижении цели или при отзыве согласия"
+    law: "152-ФЗ"
+    article: "ст. 5"
+    part: "ч. 7"
+    effect: destruction
+
+  RF_152_FZ_ART6_P1_1:
+    title: "Обработка на основании согласия субъекта"
+    law: "152-ФЗ"
+    article: "ст. 6"
+    part: "ч. 1"
+    paragraph: "п. 1"
+    effect: consent_based_processing
+
+  RF_152_FZ_ART9:
+    title: "Форма, содержание и отзыв согласия на обработку ПДн"
+    law: "152-ФЗ"
+    article: "ст. 9"
+    effect: consent_requirements
+
+  RF_152_FZ_ART10_P1:
+    title: "Особые категории ПДн: общий запрет и исключения"
+    law: "152-ФЗ"
+    article: "ст. 10"
+    part: "ч. 1"
+    effect: special_categories_regime
+
+  RF_152_FZ_ART10_P1_1:
+    title: "Общедоступные специальные категории по воле субъекта"
+    law: "152-ФЗ"
+    article: "ст. 10"
+    part: "ч. 1.1"
+    effect: publicly_available_special_categories_by_subject_will
+    legal_review_required: true
+
+  RF_152_FZ_ART11:
+    title: "Биометрические персональные данные"
+    law: "152-ФЗ"
+    article: "ст. 11"
+    effect: biometric_regime
+
+  RF_152_FZ_ART21:
+    title: "Права субъекта, прекращение обработки и уничтожение ПДн"
+    law: "152-ФЗ"
+    article: "ст. 21"
+    effect: subject_rights_withdrawal_destruction
+
+  RF_152_FZ_ART21_P5:
+    title: "Прекращение обработки и уничтожение в установленный срок при отзыве или возражении"
+    law: "152-ФЗ"
+    article: "ст. 21"
+    part: "ч. 5"
+    effect: withdrawal_deadline
+    legal_review_required: true
+
+  RF_GK_ART152_1:
+    title: "Использование изображения гражданина"
+    law: "ГК РФ"
+    article: "ст. 152.1"
+    effect: image_use_regime
+
+  RF_SK_ART54:
+    title: "Право ребёнка на защиту и учёт интересов"
+    law: "СК РФ"
+    article: "ст. 54"
+    effect: child_protection
+
+  RF_SK_ART64:
+    title: "Согласие законного представителя на обработку ПДн ребёнка"
+    law: "СК РФ"
+    article: "ст. 64"
+    effect: guardian_consent

@@ -1,0 +1,39 @@
+# Политика хранения медиа и данных
+version: 1
+
+cloudflare_r2:
+  canonical_for:
+    - media_webp_avif
+    - passports
+    - pdf
+    - backups
+    - reports
+  forbidden:
+    - video_files
+    - raw_pii
+    - secrets
+
+blogger_legacy:
+  role: phase_1_preserve
+  existing_images_on_migrated_sites: preserve_blogger_urls
+  new_pages_images: r2_media
+  new_uploads_after_phase_2: forbidden
+
+minio:
+  role: stage_0_raw_etl
+  environment: local_or_self_hosted
+  forbidden_for:
+    - vercel_production
+    - public_cdn
+    - long_term_pii
+
+gallery_obrazslov:
+  status: deprecated
+  action: remove_from_active_architecture_and_delete_site
+  technology_migration: image_cleaning_compression_to_r2_pipeline
+  archive: archive/deprecated/gallery
+
+cdn:
+  domain: cdn.obrazslov.ru
+  scope: all_ecosystem_sites
+  type: infrastructure

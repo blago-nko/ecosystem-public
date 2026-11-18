@@ -1,0 +1,344 @@
+version: 1
+status: draft
+description: "Матрица типов ПДн: юридические основания, цели, согласие, письменное заявление, публичный git, сайты, внутренняя обработка, redaction."
+owner: legal_reviewer
+last_updated: '2026-11-18'
+
+fields:
+  - field_id: identity.full_name
+    field_group: identity
+    risk_level: medium
+    legal_basis_refs:
+      - RF_152_FZ_ART5_P2
+      - RF_152_FZ_ART5_P4
+      - RF_152_FZ_ART6_P1_1
+      - RF_152_FZ_ART9
+    purpose_refs:
+      - PURPOSE_PUBLIC_BIOGRAPHY
+      - PURPOSE_MEMBERSHIP_ADMINISTRATION
+      - PURPOSE_ARCHITECTURE_GOVERNANCE
+    consent_required: true
+    written_statement_required: true
+    public_git_allowed: canonical_id_only
+    public_site_allowed:
+      sam: conditional
+      nasa_istoria: true
+      partnerstvo: true
+      can: false
+      gallery: false
+    internal_processing_allowed: true
+    redaction_default:
+      public_git: canonical_id_only
+      jsonld: full_name_if_statement_on_file
+      rss: omit
+      sitemap: omit
+    withdrawal_action:
+      - stop_public_display
+      - regenerate_public_artifacts
+      - purge_cdn
+
+  - field_id: demographic.birth_exact_date
+    field_group: demographic
+    risk_level: high
+    legal_basis_refs:
+      - RF_152_FZ_ART5_P4
+      - RF_152_FZ_ART6_P1_1
+      - RF_152_FZ_ART9
+      - RF_152_FZ_ART21
+    purpose_refs:
+      - PURPOSE_PUBLIC_BIOGRAPHY
+      - PURPOSE_LEGAL_RECORDKEEPING
+    consent_required: true
+    written_statement_required: true
+    public_git_allowed: false
+    public_site_allowed:
+      sam: false
+      nasa_istoria: conditional
+      partnerstvo: false
+      can: false
+      gallery: false
+    internal_processing_allowed: restricted
+    redaction_default:
+      public: birth_year_only
+      jsonld: omit
+      rss: omit
+      sitemap: omit
+    withdrawal_action:
+      - stop_public_display
+      - regenerate_public_artifacts
+      - purge_cdn
+      - delete_from_active_store
+
+  - field_id: demographic.birth_year
+    field_group: demographic
+    risk_level: low
+    legal_basis_refs:
+      - RF_152_FZ_ART5_P4
+      - RF_152_FZ_ART6_P1_1
+    purpose_refs:
+      - PURPOSE_PUBLIC_BIOGRAPHY
+    consent_required: true
+    written_statement_required: conditional
+    public_git_allowed: conditional
+    public_site_allowed:
+      sam: false
+      nasa_istoria: true
+      partnerstvo: conditional
+      can: false
+      gallery: false
+    internal_processing_allowed: true
+    redaction_default:
+      public: birth_year
+      jsonld: birth_year_if_statement
+      rss: omit
+    withdrawal_action:
+      - regenerate_public_artifacts
+
+  - field_id: demographic.residence_address
+    field_group: demographic
+    risk_level: high
+    legal_basis_refs:
+      - RF_152_FZ_ART5_P4
+      - RF_152_FZ_ART6_P1_1
+      - RF_152_FZ_ART9
+      - RF_152_FZ_ART21
+    purpose_refs:
+      - PURPOSE_LEGAL_RECORDKEEPING
+      - PURPOSE_MEMBERSHIP_ADMINISTRATION
+    consent_required: true
+    written_statement_required: false
+    public_git_allowed: false
+    public_site_allowed:
+      sam: false
+      nasa_istoria: false
+      partnerstvo: false
+      can: false
+      gallery: false
+    internal_processing_allowed: restricted
+    redaction_default:
+      public: city_or_region_only_if_necessary
+      jsonld: omit
+      rss: omit
+    withdrawal_action:
+      - delete_from_active_store
+      - record_audit_event
+
+  - field_id: family.marital_status
+    field_group: family
+    risk_level: high
+    legal_basis_refs:
+      - RF_152_FZ_ART5_P4
+      - RF_152_FZ_ART6_P1_1
+      - RF_152_FZ_ART9
+    purpose_refs: []
+    consent_required: true
+    written_statement_required: false
+    public_git_allowed: false
+    public_site_allowed:
+      sam: false
+      nasa_istoria: false
+      partnerstvo: false
+      can: false
+      gallery: false
+    internal_processing_allowed: restricted
+    redaction_default:
+      public: omit
+      jsonld: omit
+      rss: omit
+    withdrawal_action:
+      - delete_from_active_store
+
+  - field_id: family.children_details
+    field_group: minors
+    risk_level: critical
+    legal_basis_refs:
+      - RF_152_FZ_ART10_P1
+      - RF_152_FZ_ART9
+      - RF_SK_ART54
+      - RF_SK_ART64
+    purpose_refs:
+      - PURPOSE_CHILD_PROTECTION
+    consent_required: true
+    guardian_consent_required: true
+    written_statement_required: false
+    public_git_allowed: false
+    public_site_allowed:
+      sam: false
+      nasa_istoria: false
+      partnerstvo: false
+      can: false
+      gallery: false
+    internal_processing_allowed: highly_restricted
+    redaction_default:
+      public: forbidden
+      jsonld: forbidden
+      rss: forbidden
+      sitemap: forbidden
+    withdrawal_action:
+      - delete_from_active_store
+      - record_audit_event
+      - legal_review
+
+  - field_id: special.political_affiliation
+    field_group: special_categories
+    risk_level: critical
+    legal_basis_refs:
+      - RF_152_FZ_ART10_P1
+      - RF_152_FZ_ART10_P1_1
+      - RF_152_FZ_ART9
+    purpose_refs:
+      - PURPOSE_PUBLIC_BIOGRAPHY
+    consent_required: true
+    written_statement_required: true
+    legal_review_required: true
+    public_git_allowed: false
+    public_site_allowed:
+      sam: false
+      nasa_istoria: conditional_historical_only
+      partnerstvo: false
+      can: false
+      gallery: false
+    internal_processing_allowed: forbidden_without_explicit_written_consent
+    redaction_default:
+      public: omit_by_default
+      jsonld: forbidden
+      rss: forbidden
+      sitemap: forbidden
+    withdrawal_action:
+      - stop_public_display
+      - regenerate_public_artifacts
+      - purge_cdn
+      - delete_from_active_store
+
+  - field_id: contact.personal_email
+    field_group: contact
+    risk_level: high
+    legal_basis_refs:
+      - RF_152_FZ_ART5_P4
+      - RF_152_FZ_ART6_P1_1
+      - RF_152_FZ_ART9
+    purpose_refs:
+      - PURPOSE_MEMBERSHIP_ADMINISTRATION
+    consent_required: true
+    written_statement_required: false
+    public_git_allowed: false
+    public_site_allowed:
+      sam: false
+      nasa_istoria: false
+      partnerstvo: false
+      can: false
+      gallery: false
+    internal_processing_allowed: conditional
+    redaction_default:
+      public: replace_with_form_or_org_contact
+      jsonld: omit
+      rss: omit
+    withdrawal_action:
+      - delete_from_active_store
+
+  - field_id: contact.personal_phone
+    field_group: contact
+    risk_level: high
+    legal_basis_refs:
+      - RF_152_FZ_ART5_P4
+      - RF_152_FZ_ART6_P1_1
+      - RF_152_FZ_ART9
+    purpose_refs:
+      - PURPOSE_MEMBERSHIP_ADMINISTRATION
+    consent_required: true
+    written_statement_required: false
+    public_git_allowed: false
+    public_site_allowed:
+      sam: false
+      nasa_istoria: false
+      partnerstvo: false
+      can: false
+      gallery: false
+    internal_processing_allowed: conditional
+    redaction_default:
+      public: omit
+      jsonld: omit
+      rss: omit
+    withdrawal_action:
+      - delete_from_active_store
+
+  - field_id: contact.organizational_email
+    field_group: contact
+    risk_level: low
+    legal_basis_refs: []
+    purpose_refs:
+      - PURPOSE_ORGANIZATIONAL_CONTACT
+    consent_required: false
+    written_statement_required: false
+    public_git_allowed: registry_metadata_only
+    public_git_registry_ref: manifests/registry/identity_graph.public.yaml
+    git_author_use: forbidden
+    public_site_allowed:
+      sam: true
+      nasa_istoria: true
+      partnerstvo: true
+      can: conditional
+      gallery: true
+    internal_processing_allowed: true
+    redaction_default:
+      public: keep_as_org_contact
+      jsonld: organizational_contact_only
+      rss: omit
+    note: "Личный или legacy организационный email не используется как git author email."
+
+  - field_id: identifiers.government_identifiers
+    field_group: government_identifiers
+    risk_level: critical
+    legal_basis_refs:
+      - RF_152_FZ_ART5
+      - RF_152_FZ_ART6
+      - RF_152_FZ_ART9
+      - RF_152_FZ_ART21
+    purpose_refs:
+      - PURPOSE_LEGAL_RECORDKEEPING
+    consent_required: true
+    written_statement_required: false
+    public_git_allowed: false
+    public_site_allowed:
+      sam: false
+      nasa_istoria: false
+      partnerstvo: false
+      can: false
+      gallery: false
+    internal_processing_allowed: restricted_encrypted_only
+    redaction_default:
+      public: forbidden
+      jsonld: forbidden
+      rss: forbidden
+      sitemap: forbidden
+    withdrawal_action:
+      - delete_from_active_store
+      - legal_review
+
+  - field_id: media.image_original
+    field_group: image
+    risk_level: high
+    legal_basis_refs:
+      - RF_GK_ART152_1
+      - RF_152_FZ_ART6_P1_1
+      - RF_152_FZ_ART9
+    purpose_refs:
+      - PURPOSE_IMAGE_USE
+    consent_required: true
+    written_statement_required: true
+    public_git_allowed: false
+    public_site_allowed:
+      sam: false
+      nasa_istoria: conditional_derivative_only
+      partnerstvo: conditional_derivative_only
+      can: false
+      gallery: conditional
+    internal_processing_allowed: restricted
+    redaction_default:
+      public: web_derivative_no_exif_no_geo
+      jsonld: url_only
+      rss: omit
+    withdrawal_action:
+      - stop_public_display
+      - purge_cdn
+      - delete_original_from_active_store

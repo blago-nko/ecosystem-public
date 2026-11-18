@@ -1,0 +1,114 @@
+version: 1
+status: draft
+description: "Слоистая политика обработки и публичного размещения персональных данных экосистемы blago-nko."
+owner: legal_reviewer
+last_updated: '2026-11-18'
+
+principles:
+  default_deny: true
+  purpose_limitation: true
+  data_minimization: true
+  storage_limitation: true
+  withdrawability: true
+  layered_storage: true
+  git_is_not_pii_store: true
+  license_is_not_pii_basis: true
+
+layers:
+  L0:
+    name: public_git
+    description: "Публичный монорепозиторий blago-nko/ecosystem."
+    allowed:
+      - canonical_ids
+      - organizational_public_facts
+      - public_roles
+      - policy_metadata
+      - consent_status
+      - statement_status
+      - restricted_refs
+      - legal_basis_refs
+      - purpose_refs
+      - site_matrix
+      - redaction_rules
+    forbidden:
+      - raw_pii
+      - special_categories_values
+      - minors_details
+      - personal_contacts
+      - government_identifiers
+      - image_originals
+      - consent_documents
+      - written_statements
+      - exact_birth_dates
+      - residence_addresses
+      - family_status_values
+      - political_affiliation_values
+
+  L1P:
+    name: restricted_public_disclosure
+    description: "Зашифрованное хранилище данных, разрешённых к публичному размещению по письменному заявлению субъекта."
+    basis: written_statement
+    storage: encrypted_restricted
+    access:
+      - founder
+      - legal_reviewer
+      - authorized_ai_agent_with_consent_context
+
+  L1C:
+    name: restricted_internal_processing
+    description: "Зашифрованное хранилище данных, обрабатываемых внутренне на основании согласия."
+    basis: consent
+    storage: encrypted_restricted
+    access:
+      - founder
+      - legal_reviewer
+      - authorized_operators
+
+  L2:
+    name: public_websites_cdn
+    description: "Публичные сайты, CDN, JSON-LD, RSS, sitemap, статические сборки."
+    source: L1P_via_pii_matrix
+    never_from:
+      - L1C_directly
+      - L0_if_L0_contains_raw_pii
+
+  L3:
+    name: audit_withdrawal
+    description: "Юридический след, контроль отзыва, takedown-статусы, хеши документов без раскрытия содержания."
+    storage: encrypted_restricted
+    public_git_metadata_only: true
+
+statement_vs_consent:
+  written_statement:
+    question: "Можно ли разместить данные публично?"
+    controls:
+      - L1P
+      - L2
+    revocable: true
+    withdrawal_action:
+      - regenerate_public_artifacts
+      - purge_cdn
+      - takedown
+      - record_audit_event
+
+  consent:
+    question: "Можно ли хранить и обрабатывать данные внутренне?"
+    controls:
+      - L1C
+    revocable: true
+    withdrawal_action:
+      - stop_processing
+      - delete_from_active_store
+      - retain_legal_archive_if_another_basis_exists
+      - record_audit_event
+
+  note: "Письменное заявление не равно согласию на обработку. Наличие одного не подразумевает наличие другого."
+
+legal_framework:
+  personal_data: "152-ФЗ"
+  image_use: "ГК РФ ст. 152.1"
+  child_protection: "СК РФ ст. 54, 64"
+  special_categories: "152-ФЗ ст. 10"
+  biometric: "152-ФЗ ст. 11"
+  withdrawal: "152-ФЗ ст. 21"
+  note: "Лицензии AGPLv3 / CC BY-NC 4.0 / CC BY 4.0 / MIT не являются правовым основанием для обработки ПДн."

@@ -1,0 +1,79 @@
+# Реестр прав на контент и медиа
+# Слоёная лицензия для карточек САН и экосистемы blago-nko.
+version: 1
+
+profiles:
+  san_fact_card_default:
+    facts:
+      copyrightable: false
+      notice: "Фактические сведения не являются объектами авторского права."
+      public_source_required: false
+      internal_source_required: true
+
+    original_san_content:
+      license: "CC-BY-NC-4.0"
+      attribution: "САН / blago-nko"
+      allowed_uses:
+        - informational
+        - noncommercial
+      prohibited_uses:
+        - commercial
+        - systematic_extraction
+        - resale
+        - ai_training_without_agreement
+
+    third_party_source_materials:
+      license: "rights_reserved"
+      notice: "Права на исходные коммерческие предложения принадлежат правообладателям."
+      allowed_only_if:
+        - explicit_consent
+        - verified_license
+        - public_domain_verified
+        - art_1274_single_illustration
+
+    infrastructure_data:
+      license: "per_source"
+      required_sources:
+        - osm
+        - domrf
+        - municipal
+        - developer
+
+    images:
+      default_policy: "forbid_unless_rights"
+      max_assets_per_card: 1
+      allowed_asset_types:
+        - photo
+        - floor_plan
+      attribution_required: true
+      feed_allowed: false
+      ai_crawler_allowed: false
+      report_allowed: false
+
+  person_portrait_with_consent:
+    applies_to:
+      - portrait_bobrov
+    subject: bobrov-av
+    legal_basis:
+      - "ст. 152.1 ГК РФ (согласие на использование изображения)"
+      - "ст. 10 ч. 1.1 152-ФЗ (общедоступные ПДн по письменному заявлению)"
+    consent_basis: "письменное заявление и согласие Основателя (restricted) на размещение ПДн в открытом публичном доступе"
+    source_type: nko_owned
+    context: "официальный портрет руководителя НКО на сайте организации"
+    distribution_allowed: true
+    distribution_scope: "публичный сайт НКО; при повторном использовании в AI-фидах/партнёрских отчётах — отдельный rights gate"
+    withdrawal_procedure_ref: "identity_graph.public.yaml access_control.withdrawal_procedure"
+    feed_allowed: conditional
+    ai_crawler_allowed: false
+    report_allowed: conditional
+
+common_sources_page:
+  canonical: "/legal/data-sources/"
+  param: "?object={id}"
+  scope: all_ecosystem_sites
+  note: "Одна общая страница, не персональная на каждый объект"
+
+charter_basis:
+  organization: "НП «Общественное благополучие Воронежа»"
+  purpose: "общественное благополучие, защита прав, разрешение споров, юридическая помощь, исследования, информирование"
+  limitation: "уставные цели не отменяют права третьих лиц на фото, планы, тексты, логотипы, базы данных и ПДн"

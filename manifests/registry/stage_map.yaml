@@ -1,0 +1,68 @@
+# Единая карта этапов экосистемы blago-nko
+version: 1
+stages:
+  minus_1:
+    description: "Статическая визитка / Google Tables demo (полноценная БД Stage -1)"
+    allowed:
+      - static_hugo
+      - next_js_google_sheets
+      - no_pii
+      - no_auth
+      - no_feeds
+      - no_video_auto
+      - no_lead_auto
+      - no_reso
+    forbidden:
+      - pdn_storage
+      - payments
+      - cpa_marketplace
+      - white_label
+      - on_premise
+      - data_licensing
+  minus_1_5:
+    description: "Поисковая регистрация, canonical URLs, verification"
+    allowed:
+      - search_registration
+      - indexnow
+      - sitemap
+      - robots
+      - canonical_urls
+  zero:
+    description: "MVP: Supabase/Postgres, MinIO raw, R2 media, RF PII gateway"
+    allowed:
+      - postgres_supabase
+      - minio_local_etl
+      - r2_media_passports_pdf
+      - rf_pii_gateway
+      - internal_reviews
+      - basic_forms
+      - feature_flags
+    forbidden:
+      - reso_api
+      - lead_automation
+      - video_multi_publish
+      - external_reviews
+      - paid_reports
+      - white_label
+      - on_premise
+  one:
+    description: "Масштабирование: RESO mapper, фиды, lead auto, видео, отчёты по соглашениям"
+    allowed:
+      - reso_mapper
+      - external_feeds
+      - lead_distribution_auto
+      - video_multi_publish
+      - external_reviews_official
+      - cma_reports_partner
+      - partner_api
+      - rbac_2fa
+  two:
+    description: "Зрелость: некоммерческие соглашения, партнёрское брендирование, развёртывание у партнёра"
+    allowed:
+      - data_partner_agreements
+      - partner_branding
+      - managed_deployment
+      - advanced_waf
+      - ml_governance
+      - international_reso
+      - formal_committee

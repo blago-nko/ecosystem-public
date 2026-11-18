@@ -1,0 +1,75 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage/
+.coverage
+htmlcov/
+
+# Node / frontend builds
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json.bak
+
+# Hugo
+public/
+resources/_gen/
+.hugo_build.lock
+assetCache/
+
+# Astro / Next.js
+dist/
+.next/
+out/
+.astro/
+.vercel/
+
+# Pagefind generated at build time
+pagefind/
+
+# Secrets and local environments, never in git
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials.json
+
+# OS / editors
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.idea/
+.vscode/
+.cursor/
+
+# Logs and temporary files
+*.log
+tmp/
+.tmp/
+.cache/
+
+# Test artifacts. Already tracked archive files are not affected by gitignore.
+test_out/
+
+# Restricted PII / sanitized exclusions, never in public git
+restricted/
+*.enc
+identity_graph.restricted.yaml
+transfer-drift-notes.md

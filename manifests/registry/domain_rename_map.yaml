@@ -1,0 +1,52 @@
+# Машиночитаемый интент переименования доменов.
+# Применяется скриптом scripts/migration/rename_domains.py на шаге изменения манифестов.
+# Перенесённые оригиналы domains-graph.yaml и manifests.yaml до применения содержат старые имена как known drift.
+version: 1
+status: pending
+apply_via: scripts/migration/rename_domains.py
+do_not_apply_manually: true
+
+renames:
+  - old_fqdn: science.obrazslov.ru
+    new_fqdn: vacuum-condensate.obrazslov.ru
+    reason: "science.obrazslov.ru было ошибочным именем для VAC; canonical домен Вакуумного конденсата — vacuum-condensate.obrazslov.ru, согласован с sites/vacuum-condensate/"
+    affects:
+      - manifests/registry/domains-graph.yaml
+      - manifests/registry/manifests.yaml
+      - manifests/САМ.md
+      - manifests/МИГРАЦИЯ.md
+      - manifests/ВАКУУМНЫЙ_КОНДЕНСАТ.md
+      - docs/STATUS.md
+      - archive/legacy-docs/manifests-root/README.md
+    field_updates:
+      - file: manifests/registry/domains-graph.yaml
+        fields:
+          - domains[].fqdn
+          - links[].spokes
+          - applies_to
+      - file: manifests/registry/manifests.yaml
+        fields:
+          - manifests[].domain
+    post_rename_actions:
+      - "Проверить, что sites/vacuum-condensate/ README указывает на vacuum-condensate.obrazslov.ru"
+      - "Обновить ссылки в МИГРАЦИЯ.md и ВАКУУМНЫЙ_КОНДЕНСАТ.md"
+      - "Не создавать отдельный сайт science; science.obrazslov.ru не является самостоятельным доменом экосистемы"
+
+  - old_fqdn: r2.blagorussia.ru
+    new_fqdn: cdn.obrazslov.ru
+    reason: "Единый публичный CDN-домен экосистемы — cdn.obrazslov.ru; r2.blagorussia.ru упраздняется как публичный/infra домен"
+    affects:
+      - manifests/registry/domains-graph.yaml
+      - manifests/САМ.md
+      - manifests/МИГРАЦИЯ.md
+      - docs/STATUS.md
+      - archive/legacy-docs/manifests-root/README.md
+    field_updates:
+      - file: manifests/registry/domains-graph.yaml
+        fields:
+          - infra[].fqdn
+          - infra[].role
+    post_rename_actions:
+      - "role изменить на public-media-cdn"
+      - "R2 bucket origin остаётся внутренним хранилищем, не публичным доменом"
+      - "storage_policy.yaml уже содержит cdn.obrazslov.ru и не требует правки"

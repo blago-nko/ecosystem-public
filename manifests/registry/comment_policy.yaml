@@ -1,0 +1,160 @@
+# Политика комментариев экосистемы blago-nko.
+# Существующие комментарии Blogger: архив в git, скрыть на сайте, без автоматического PII-scan.
+# Будущие комментарии: stage -1/0 disabled, stage 1 giscus-with-consent.
+version: 1
+generated_from:
+  - identity_graph.public.yaml
+  - restricted://audits/2026-11-san-manifest-audit/transfer-drift-notes.md
+  - crypto_policy.yaml
+  - documentation.yaml
+  - artifacts.yaml
+
+principles:
+  reliability_over_speed: true
+  preserve_links: true
+  hide_legacy_comments_on_site: true
+  archive_legacy_comments_in_git: true
+  no_automated_pii_scan: true
+  human_takedown_required: true
+  consent_for_new_personal_data: true
+
+existing_comments:
+  source: blogger
+  presence_evidence:
+    - domain: partnerstvo.blagorussia.ru
+      page: /2020/03/prezident-partnerstva.html
+      section: "## Комментарии"
+    - domain: nasa-istoria.blagorussia.ru
+      page: /2022/01/bobrov-aleksandr-valentinovich-biografiya.html
+      section: "## Комментарии"
+      note: "подтверждено по предыдущим KB-выдержкам"
+  action: archive_and_hide
+  archive_path: "archive/blogger/{site}/comments/"
+  display_on_site: false
+  seo_indexing: noindex
+  canonical_link_to_original_post: preserve_when_possible
+  migration_status: to_migrate
+  related_scripts:
+    - scripts/migration/blogger_export.py
+    - scripts/migration/blogger_page_parser.py
+    - scripts/migration/migrate_live_links.py
+  notes: >-
+    Комментарии сохраняются как исторический архив. На сайте не отображаются.
+    Автоматический PII-scan отключён по решению Основателя. Это не отменяет
+    обязанность реагировать на жалобы и требования удаления через human takedown.
+
+pii_scan:
+  automated_scan: disabled
+  decision_by: Founder
+  rationale: >-
+    Решение Основателя: не выполнять автоматическое сканирование комментариев на ПДн.
+    Вместо автоматического фильтра используется ручной канал удаления.
+  residual_risk: >-
+    Комментарии третьих лиц могут содержать ПДн. Отсутствие автоматического скана
+    повышает риск. Обязателен takedown-канал и процедура реагирования.
+  human_review:
+    trigger:
+      - complaint
+      - legal_request
+      - subject_request
+      - Roskomnadzor_inquiry
+    sla_days: 30
+    reference: "ст. 21 ч. 5 152-ФЗ для прекращения обработки по отзыву/требованию субъекта"
+
+future_comments:
+  stage_minus_1:
+    status: disabled
+    reason: "нет пользовательского ввода, только статика и реестры"
+  stage_0:
+    status: disabled
+    reason: >-
+      На этапе RF gateway и encrypted collection комментарии не включаются,
+      чтобы не смешивать публичный UGC и ПДн-контур.
+  stage_1:
+    status: giscus_with_consent
+    provider: giscus
+    consent_required: true
+    allowed_data:
+      - display_name_optional
+      - comment_text
+      - timestamp
+      - post_reference
+    forbidden_data:
+      - phone
+      - email
+      - address
+      - passport_data
+      - political_affiliation
+      - health_data
+      - minor_identifying_data
+    moderation:
+      automated_pii_scan: disabled
+      human_review_on_complaint: true
+      takedown_channel: /legal/takedown.html
+    notes: >-
+      Giscus подключается только после явного согласия пользователя и отображения
+      privacy notice. Личные данные в комментариях не собираются системно.
+  stage_2:
+    status: giscus_with_consent_and_audit
+    additional_controls:
+      - audit_log
+      - partner_isolation
+      - retention_policy
+    notes: >-
+      На stage 2 возможны партнёрские сценарии, но персональные данные комментариев
+      не передаются партнёрам без отдельного соглашения и правового основания.
+
+takedown_procedure:
+  channel: /legal/takedown.html
+  contact: "legal@blagorussia.ru"
+  actions:
+    - hide_comment_from_public_display
+    - remove_from_active_site_index
+    - archive_or_restrict_copy_if_legal_basis_requires_retention
+    - assess_git_history_impact
+  git_history_options:
+    if_public_repo_history_contains_pii:
+      option_1: history_rewrite
+      option_2: convert_repository_to_private
+      option_3: move_archive_to_restricted_storage
+  git_history_note: >-
+    Если архив комментариев находится в публичном git и содержит ПДн третьих лиц,
+    простое удаление из working tree недостаточно. Требуется оценка history rewrite,
+    перевода репозитория в приватный режим или переноса архива в restricted storage.
+  relation_to_identity_graph: >-
+    Аналогично withdrawal_procedure в identity_graph.public.yaml: git-история публична навсегда,
+    поэтому отзыв/требование удаления может потребовать не только удаления файла,
+    но и работы с историей.
+
+retention:
+  legacy_comments:
+    storage: git_archive
+    public_display: false
+    search_index: noindex
+    retention_basis: "исторический архив НКО; при жалобе — takedown_procedure"
+  future_comments:
+    storage: giscus_provider_plus_local_metadata
+    personal_data_minimization: true
+    deletion_on_request: true
+
+copy_rules:
+  on_site:
+    legacy_comments_heading: "Комментарии архивированы и недоступны для публичного просмотра"
+    future_comments_heading: "Комментарии доступны по согласию пользователя"
+  forbidden:
+    - "продажа комментариев"
+    - "тариф на комментарии"
+    - "автоматическая публикация персональных данных"
+
+dependencies:
+  documentation.yaml:
+    - comment_documentation
+  identity_graph.public.yaml:
+    - derived_summaries.comment_section_presence
+    - access_control.withdrawal_procedure
+  artifacts.yaml:
+    - script_mapping.migrate_live_links.py
+    - script_mapping.blogger_export.py
+  crypto_policy.yaml:
+    - biography_policy.public_placement
+    - stage_0.supabase_forbidden_fields

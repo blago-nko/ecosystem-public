@@ -1,0 +1,253 @@
+# Матрица владения артефактами и доменами экосистемы blago-nko.
+# Фиксирует: кто владеет, какие overrides действуют, какие rights-profiles применены.
+# Все находки из restricted://audits/2026-11-san-manifest-audit/transfer-drift-notes.md и KB перенесены сюда как машиночитаемые правила.
+version: 1
+generated_from:
+  - domains-graph.yaml
+  - manifests.yaml
+  - rights_registry.yaml
+  - crypto_policy.yaml
+  - storage_policy.yaml
+  - restricted://audits/2026-11-san-manifest-audit/transfer-drift-notes.md
+
+# --- Владельцы по контурам ---
+contours:
+  A:
+    github_org: blago-nko
+    owner: blago-nko
+    note: основная сеть, 11 тематических сайтов + VAC + blagorussia hub
+  B:
+    github_org: can-secure-dev
+    owner: can-secure-dev
+    note: изолированный контур ПДн (152-ФЗ), Next.js platform
+    pii_policy: rf_gateway_only
+    vercel_role: compute_only_no_pii_storage
+  V:
+    owner: blago-nko
+    note: сайт-витрина НКО — DEPRECATED (gallery.obrazslov.ru)
+    status: deprecated
+    action: remove_from_active_architecture
+
+# --- Владельцы по доменам ---
+domains:
+  blagorussia.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: blogger
+    engine_target: hugo
+    role: rss-hub
+    status: planned_migration
+    notes: "хаб архитектуры Hub and Spokes (МИГРАЦИЯ 5.1.1.2)"
+
+  obrazslov.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: hugo
+    engine_target: hugo
+    role: knowledge-base
+    status: active
+    overrides:
+      - id: pagefind_glob_preserve
+        rule: "не менять Pagefind glob '**/*.html' без перехода на pretty-URLs + 301"
+        reason: "сохранение Blogger URL при миграции"
+        owner: migration
+        expires: "после перехода на pretty URLs"
+
+  partnerstvo.blagorussia.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: blogger
+    engine_target: hugo
+    role: partnership-hub
+    status: planned_migration
+    notes: "Hugo-сайт с хабами; содержит биографию президента с PII"
+    pii_strictness: biographies_existing_keep_new_consent
+
+  novosti.blagorussia.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: blogger
+    engine_target: hugo
+    role: news-hub
+    status: planned_migration
+    canonical_parent: blagorussia.ru
+
+  ot-gorozan.blagorussia.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: blogger
+    engine_target: hugo
+    status: planned_migration
+
+  obavlenia.blagorussia.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: blogger
+    engine_target: hugo
+    status: planned_migration
+
+  interesnye-mesta.obrazslov.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: blogger
+    engine_target: hugo
+    status: planned_migration
+
+  moisites.blagorussia.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: blogger
+    engine_target: hugo
+    status: planned_migration
+
+  joga.blagorussia.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: blogger
+    engine_target: hugo
+    status: planned_migration
+
+  ideologia.obrazslov.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: blogger
+    engine_target: hugo
+    status: planned_migration
+
+  nasa-istoria.blagorussia.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: hugo
+    engine_target: astro
+    role: genealogy-hub
+    status: active_hugo_pending_astro
+    pii_strictness: biographies_existing_keep_new_consent
+    notes: "canonical genealogy hub; partnerstvo ссылается сюда; содержит биографию Основательа с PII и портрет на Blogger URL"
+    migration_notes:
+      - "при Astro-миграции: портрет Основательа мигрируется в R2 (решение 4)"
+      - "editorial review опечаток в биографии"
+      - "PII-minimization review с приоритетом на несовершеннолетнего ребёнка и политические данные"
+
+  grekpanteon.obrazslov.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: hugo
+    engine_target: astro
+    role: knowledge-base
+    status: active_hugo_pending_astro
+    notes: "Hugo → Astro после VAC пилота"
+
+  vacuum-condensate.obrazslov.ru:
+    owner: blago-nko
+    contour: A
+    engine_current: astro
+    engine_target: astro
+    role: research-portal
+    status: active
+    formerly_known_as: science.obrazslov.ru
+    rename_intent: domain_rename_map.yaml
+    rights_profile: vac_special
+    license_override: "Text: CC BY 4.0 | Code: MIT"
+    cluster_correction: "manifests.yaml cluster B — ошибка; VAC относится к contour A"
+    notes: "Вакуумный конденсат; дистрибуция через СУМКа; не отдельный science-сайт"
+
+  can.blagorussia.ru:
+    owner: can-secure-dev
+    contour: B
+    engine_current: none
+    engine_target: next
+    role: pdn-platform
+    status: stage_minus_1_planned
+    hosting: vercel
+    hosting_constraint: "Vercel compute only, NO PII storage; PII через RF gateway + Yandex"
+    isolated: true
+    notes: "SAN platform; замещает sites/san/static/ Hugo-визитку"
+
+  gallery.obrazslov.ru:
+    owner: blago-nko
+    contour: V
+    engine_current: blogger
+    engine_target: none
+    role: nko-vitrina
+    status: deprecated
+    action: remove_from_active_architecture_and_delete_site
+    archive: archive/deprecated/gallery
+    exporter: disabled
+    metrics_removed:
+      - gallery_export_success_rate
+    notes: "полное удаление из активной архитектуры на secondary cleanup"
+
+# --- Инфраструктурные домены ---
+infra:
+  cdn.obrazslov.ru:
+    owner: blago-nko
+    role: public-media-cdn
+    scope: all_ecosystem_sites
+    type: infrastructure
+    formerly_known_as: r2.blagorussia.ru
+    rename_intent: domain_rename_map.yaml
+    notes: "единый публичный CDN; R2 bucket origin не является публичным доменом"
+
+# --- Shared assets ---
+shared_assets:
+  path: shared-assets/
+  owner: blago-nko
+  submodule_status: cancelled
+  note: "в монорепе git-submodule отменён (решение A1.1); сайты подключают тему relative-mount"
+  subdirs:
+    hugo/:
+      owner: blago-nko
+      scope: 13+ Hugo-сайтов
+    astro/:
+      owner: blago-nko
+      scope: VAC, Пантеон, Наша история
+    next/:
+      owner: can-secure-dev
+      scope: SAN platform
+    web/:
+      owner: blago-nko
+      scope: кросс-фреймворк CSS tokens, JS, CookieConsent
+    rss/:
+      owner: blago-nko
+      scope: шаблоны фидов
+
+# --- Overrides (правила агентов, не удалять механически) ---
+overrides:
+  - id: design_tokens_dead_dup
+    path: shared-assets/web/css/design-tokens.css
+    rule: "мёртвый дубль .site-logo на самом деле живой override-каскад; не удалять механически без computed-замера и disjoint-!important-анализа"
+    owner: shared
+    source: KB
+
+  - id: pagefind_glob_preserve
+    path: sites/obrazslov/pagefind.yml
+    rule: "не менять glob '**/*.html' без перехода на pretty-URLs + 301"
+    owner: migration
+    expires: "после перехода на pretty URLs"
+    source: KB
+
+# --- Rights profiles ---
+rights_profiles:
+  ecosystem_default:
+    code: AGPLv3
+    content: CC BY-NC 4.0
+    attribution: "blago-nko"
+  vac_special:
+    text: CC BY 4.0
+    code: MIT
+    attribution: "Вакуумный конденсат / blago-nko"
+    note: "исключение из ЛИЦ.md; более открытая лицензия для научного контента"
+  san_original:
+    license: CC BY-NC 4.0
+    attribution: "САН / blago-nko"
+    note: "без ND; ND блокирует CMA-отчёты, переводы, AI-обработку (см. CC BY-NC-ND deed)"
+  third_party_commercial_offer:
+    license: rights_reserved
+    note: "права на исходные коммерческие предложения принадлежат правообладателям; не лицензируются САН"
+  art_1274_single_illustration:
+    basis: "ст. 1274 ГК РФ"
+    max_assets: 1
+    attribution_required: true
+    feed_allowed: false
+    ai_crawler_allowed: false
+    report_allowed: false

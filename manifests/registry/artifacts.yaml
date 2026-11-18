@@ -1,0 +1,132 @@
+# Реестр артефактов монорепозитория blago-nko/ecosystem.
+version: 1
+generated_from:
+  - archive/legacy-scripts/manifests-scripts/
+  - archive/legacy-github/manifests-github/
+  - archive/legacy-tests/
+  - .gitattributes
+  - restricted://audits/2026-11-san-manifest-audit/transfer-drift-notes.md
+  - KB (GitHub Actions: matrix, multi-container, workflow_dispatch + Publish approval, secret store, ghcr.io, free public)
+
+ci_capabilities:
+  hosted_runners:
+    os: [linux, macos, windows, arm, gpu]
+    containers: true
+    self_hosted: true
+    note: "для монорепы достаточно ubuntu-latest + python matrix; macOS/Windows опционально"
+  matrix_builds: true
+  languages: [nodejs, python, java, ruby, php, go, rust, dotnet]
+  live_logs: "realtime с цветом/эмодзи, copy link to line"
+  secret_store:
+    levels: [repository, environment, organization]
+    note: "PII-ключи (Yandex Lockbox / RF gateway) — organization level, никогда в git"
+  multi_container_testing:
+    mechanism: docker-compose в workflow
+    applies_to: stage_0_pii_gateway
+    note: "stage 0 PII gateway = web service + DB → тестировать вместе через docker-compose"
+  workflow_triggers:
+    - push
+    - issue_creation
+    - new_release
+    - workflow_dispatch
+    note: >-
+      KB-скриншот matrix-build-deploy.yml: стадия Publish «pending and waiting for approval» =
+      первый-class паттерн ручного подтверждения. workflow_dispatch / environment approval →
+      stage-gated деплой требует подтверждения Основателя (надёжность перед скоростью, memory 11);
+      НЕ авто-деплой на push.
+  actions_marketplace: "переиспользование setup-действий (Setup Node.js, Setup Java JDK, Setup .NET Core SDK, Download a Build Artifact)"
+  package_registry:
+    type: ghcr.io
+    features: [global CDN, GITHUB_TOKEN integration, APIs, webhooks, version updates, dependency resolution]
+    status: future
+    applies_to: stage_0_1_rf_gateway_containers
+    note: "KB: docker login/tag/push к ghcr.io; контейнеры RF gateway (stage 0/1); не сейчас, зафиксировано как capability"
+  free_for_public_repos: true
+  note: "публичный репо экономически оправдан для модели 13+ сайтов на GitHub Pages"
+
+scripts_structure:
+  root: scripts/
+  subdirs:
+    registry/: {purpose: синхронизация манифестов, проверка TASKS/STATUS, архитектурные патчи}
+    security/: {purpose: сканеры ПДн, лицензионные проверки}
+    media/: {purpose: обработка изображений, R2-загрузка, адаптеры хранения}
+    seo/: {purpose: проверка ссылок, sitemap, robots, ai-hints}
+    migration/: {purpose: экспорт Blogger, парсинг, миграция ссылок, url_mapping}
+
+script_mapping:
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/apply_arch_patches.py, target: scripts/registry/apply_arch_patches.py, category: registry, status: to_migrate, note: "связан с workflow apply-architecture-patches.yml"}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/sync_manifests.py, target: scripts/registry/sync_manifests.py, category: registry, status: to_migrate, note: "должен заполнять content_hash (сейчас пустой у sam/migraciya/lic/agents/vacuum_condensate)"}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/sync_readme_licenses.py, target: scripts/registry/sync_readme_licenses.py, category: registry, status: to_migrate}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/sync_readme_sections.py, target: scripts/registry/sync_readme_sections.py, category: registry, status: to_migrate}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/update_status.py, target: scripts/registry/update_status.py, category: registry, status: to_migrate, critical_fix: "ПОЧИНИТЬ: покрывать VAC (8-й); читать версии из manifests.yaml (САМ 2.15-н), не snapshot (STATUS.md 2.14-н/7 строк); см. documentation.yaml status_drift"}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/check_tasks_registry.py, target: scripts/registry/check_tasks_registry.py, category: registry, status: to_migrate}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/pdn_scanner.py, target: scripts/security/pdn_scanner.py, category: security, status: to_migrate, note: "связан с crypto_policy.yaml и identity_graph.public.yaml access_control"}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/image_sanitizer.py, target: scripts/media/image_sanitizer.py, category: media, status: to_migrate}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/sanitize_images.py, target: scripts/media/sanitize_images.py, category: media, status: to_migrate, note: "дублирует image_sanitizer.py; объединить на шаге переноса"}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/image_storage_adapter.py, target: scripts/media/image_storage_adapter.py, category: media, status: to_migrate, note: "связан с storage_policy.yaml (Blogger legacy vs R2)"}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/media_downloader.py, target: scripts/media/media_downloader.py, category: media, status: to_migrate}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/r2_uploader.py, target: scripts/media/r2_uploader.py, category: media, status: to_migrate, note: "cdn.obrazslov.ru как публичный домен (storage_policy.yaml)"}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/check_docs_links.py, target: scripts/seo/check_docs_links.py, category: seo, status: to_migrate}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/blogger_export.py, target: scripts/migration/blogger_export.py, category: migration, status: to_migrate}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/blogger_page_parser.py, target: scripts/migration/blogger_page_parser.py, category: migration, status: to_migrate}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/blogger_postid_rescue.py, target: scripts/migration/blogger_postid_rescue.py, category: migration, status: to_migrate}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/migrate_live_links.py, target: scripts/migration/migrate_live_links.py, category: migration, status: to_migrate, note: "ОТСУТСТВОВАЛ в README-списке; найден при переносе (restricted://audits/2026-11-san-manifest-audit/transfer-drift-notes.md п.10)"}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/url_mapping.py, target: scripts/migration/url_mapping.py, category: migration, status: to_migrate, note: "связан с domain_rename_map.yaml (science->vacuum-condensate, r2->cdn)"}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/branch-protection.json, target: scripts/registry/config/branch-protection.json, category: config, status: to_migrate, note: "применить через gh api или .github settings"}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/ruleset.json, target: scripts/registry/config/ruleset.json, category: config, status: to_migrate}
+  - {legacy_path: archive/legacy-scripts/manifests-scripts/ruleset-repo.json, target: scripts/registry/config/ruleset-repo.json, category: config, status: to_migrate}
+
+workflow_mapping:
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/apply-architecture-patches.yml, target: .github/workflows/apply-architecture-patches.yml, category: registry, status: to_migrate, stage_gate: always, matrix: false, dispatch: true}
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/architecture-check.yml, target: .github/workflows/architecture-check.yml, category: registry, status: to_migrate, stage_gate: always, matrix: false, dispatch: true, note: "ловит K1 drift (domains-graph/manifests/STATUS)"}
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/backup-ecosystem.yml, target: .github/workflows/backup-ecosystem.yml, category: registry, status: to_migrate, stage_gate: always, matrix: false, dispatch: true, note: "связан с backup-plan.yaml"}
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/license-check.yml, target: .github/workflows/license-check.yml, category: security, status: to_migrate, stage_gate: always, matrix: false, dispatch: true, note: "AGPLv3 + CC BY-NC 4.0 + VAC CC BY 4.0/MIT; rights_registry.yaml"}
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/manifest-consistency-check.yml, target: .github/workflows/manifest-consistency-check.yml, category: registry, status: to_migrate, stage_gate: always, matrix: false, dispatch: true, note: "КРИТИЧНО K1: сверка счётчиков манифестов/доменов между manifests.yaml/domains-graph.yaml/STATUS.md/README"}
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/manifest-lint.yml, target: .github/workflows/manifest-lint.yml, category: registry, status: to_migrate, stage_gate: always, matrix: false, dispatch: true}
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/markdown-lint.yml, target: .github/workflows/markdown-lint.yml, category: registry, status: to_migrate, stage_gate: always, matrix: false, dispatch: true, note: "использует .markdownlint-cli2.jsonc / .markdownlint.yaml"}
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/pr-prefix-check.yml, target: .github/workflows/pr-prefix-check.yml, category: registry, status: to_migrate, stage_gate: always, matrix: false, dispatch: false, note: "префиксы SAM-/CAN-/GP-/SUMKA-/MIG-/LIC-/INFRA-/VAC-/REG-; триггер pull_request"}
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/readme-license-check.yml, target: .github/workflows/readme-license-check.yml, category: security, status: to_migrate, stage_gate: always, matrix: false, dispatch: true}
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/sync-manifests.yml, target: .github/workflows/sync-manifests.yml, category: registry, status: to_migrate, stage_gate: always, matrix: false, dispatch: true, note: "запускает sync_manifests.py; заполнять content_hash"}
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/sync-readme-sections.yml, target: .github/workflows/sync-readme-sections.yml, category: registry, status: to_migrate, stage_gate: always, matrix: false, dispatch: true}
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/tests.yml, target: .github/workflows/tests.yml, category: registry, status: to_migrate, stage_gate: always, matrix: true, matrix_axes: {os: [ubuntu-latest], python: ["3.11","3.12"]}, multi_container: true, multi_container_applies_to: stage_0_pii_gateway, dispatch: true, note: "KB matrix + multi-container (docker-compose) для stage 0 PII gateway web+DB; запускает archive/legacy-tests/"}
+  - {legacy_path: archive/legacy-github/manifests-github/workflows/update-status.yml, target: .github/workflows/update-status.yml, category: registry, status: to_migrate, stage_gate: always, matrix: false, dispatch: true, note: "после починки генератора STATUS.md = 8 манифестов / 2.15-н"}
+
+secrets_policy:
+  store: github_actions_secret_store
+  levels: [repository, environment, organization]
+  rf_gateway_keys:
+    description: "Yandex Lockbox / RF gateway ключи для stage 0 PII"
+    storage: organization_level_secret
+    never_in_git: true
+    reference: crypto_policy.yaml stage_0.key_management
+  note: "PII-ключи НЕ в git, только secret store; identity_graph.public.yaml содержит ПДн, но НЕ ключи шифрования"
+
+test_mapping:
+  - {legacy_path: archive/legacy-tests/tests/test_update_status.py, target: tests/registry/test_update_status.py, status: to_migrate, critical_fix: "проверять покрытие VAC (8) и версию 2.15-н"}
+  - {legacy_path: archive/legacy-tests/tests/test_check_docs_links.py, target: tests/seo/test_check_docs_links.py, status: to_migrate}
+  - {legacy_path: archive/legacy-tests/tests/test_check_tasks_registry.py, target: tests/registry/test_check_tasks_registry.py, status: to_migrate}
+  - {legacy_path: archive/legacy-tests/tests/snapshots/test_status_structure.py, target: tests/registry/snapshots/test_status_structure.py, status: to_migrate, note: "после починки генератора обновить snapshot"}
+  - {legacy_path: archive/legacy-tests/tests/e2e/test_domains.py, target: tests/e2e/test_domains.py, status: to_migrate, note: "учитывать domain_rename_map.yaml (pending)"}
+  - {legacy_path: archive/legacy-tests/test_out/blue_square.jpg, target: tests/fixtures/blue_square.jpg, status: to_migrate, note: "бинарный, .gitattributes binary"}
+
+root_config_mapping:
+  - {legacy_path: archive/legacy-docs/manifests-root/.markdownlint-cli2.jsonc, target: .markdownlint-cli2.jsonc, status: to_migrate}
+  - {legacy_path: archive/legacy-docs/manifests-root/.markdownlint.yaml, target: .markdownlint.yaml, status: to_migrate, note: "дублирует cli2; оставить один"}
+  - {legacy_path: archive/legacy-docs/manifests-root/.cursorrules, target: .cursorrules, status: to_migrate, note: "согласовать с manifests/AGENTS.md"}
+  - {legacy_path: archive/legacy-docs/manifests-root/.gitignore, target: .gitignore, status: review_before_migrate, note: "НЕ перезаписывать боевой; слить вручную"}
+  - {legacy_path: archive/legacy-docs/manifests-root/README.md, target: archive/legacy-docs/manifests-root/README.md, status: keep_in_archive, note: "корневой README монорепы пишется отдельно"}
+
+created_artifacts:
+  - {path: .gitattributes, status: active, purpose: "нормализация LF; binary excluded"}
+  - {path: manifests/registry/domain_rename_map.yaml, status: pending, purpose: "интент science->vacuum-condensate, r2->cdn", apply_via: scripts/migration/rename_domains.py}
+  - {path: restricted://audits/2026-11-san-manifest-audit/transfer-drift-notes.md, status: active, purpose: "drift-находки, PII, consent-контур, KB-факты (вкл. точный расчёт 10 лет)"}
+
+migration_rules:
+  - "Физический перенос скриптов/workflows/тестов — отдельный шаг после фиксации интента."
+  - "Не копировать mechanically; сначала review каждого артефакта."
+  - "sanitize_images.py vs image_sanitizer.py — дубли; объединить на шаге переноса."
+  - ".gitignore legacy — НЕ перезаписывать боевой; слить вручную."
+  - "README legacy — остаётся в архиве; корневой README монорепы пишется отдельно."
+  - "Все to_migrate артефакты проходят через PR с префиксом REG- (pr-prefix-check.yml)."
+  - "Stage-gated деплой через workflow_dispatch / environment approval (ручное подтверждение Основателя), не авто на push."
+  - "Multi-container (docker-compose) для stage 0 PII gateway web+DB тестов."

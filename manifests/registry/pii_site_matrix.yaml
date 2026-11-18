@@ -1,0 +1,86 @@
+version: 1
+status: draft
+description: "Матрица разрешённых и запрещённых групп ПДн по сайтам экосистемы."
+owner: legal_reviewer
+last_updated: '2026-11-18'
+
+sites:
+  sam:
+    description: "Системный Архитектурный Манифест"
+    allowed_field_groups:
+      - identity_public_minimized
+      - organizational
+      - roles
+      - public_projects
+      - policy_metadata
+      - consent_status
+      - statement_status
+    denied_field_groups:
+      - demographic_exact
+      - family
+      - minors
+      - special_categories
+      - personal_contacts
+      - government_identifiers
+      - image_originals
+      - residence_address
+      - birth_exact_date
+
+  nasa_istoria:
+    description: "Историко-биографическое просвещение"
+    allowed_field_groups:
+      - identity_public
+      - biography_historical
+      - education
+      - positions
+      - achievements
+      - publications
+      - image_with_statement
+      - birth_year
+      - birth_place_city_or_region
+      - death_date_if_applicable
+    conditional_field_groups:
+      - demographic_exact
+      - political_historical
+    denied_field_groups:
+      - minors
+      - family_details
+      - personal_contacts
+      - government_identifiers
+      - health_data
+      - residence_address
+
+  partnerstvo:
+    description: "Членство, профессиональные роли, партнёрская активность"
+    allowed_field_groups:
+      - identity_public
+      - professional_roles
+      - membership_status
+      - organizational_contact
+      - public_services
+      - partner_projects
+    denied_field_groups:
+      - family
+      - minors
+      - special_categories
+      - health_data
+      - personal_contacts
+      - government_identifiers
+      - residence_address
+      - demographic_exact
+
+  can:
+    description: "Платформа САН, контур B, 152-ФЗ"
+    hosting_constraint: "Vercel compute only, NO PII storage"
+    allowed_field_groups: []
+    denied_field_groups:
+      - all_pii
+    note: "PII обрабатывается только через RF PII gateway, не хранится на Vercel."
+
+  gallery:
+    description: "Сайт-витрина НКО, legacy Blogger"
+    allowed_field_groups:
+      - organizational_public_facts
+    denied_field_groups:
+      - all_personal_data
+    note: "Мигрирует на Hugo/Astro; до миграции ПДн не добавляются."

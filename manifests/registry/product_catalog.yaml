@@ -1,0 +1,300 @@
+# Каталог продуктов/участия экосистемы blago-nko.
+# Некоммерческая терминология: уровни участия, взнос, партнёрское соглашение.
+# Не используем публичные формулировки «тариф», «цена», «продажа» для НКО-сервисов.
+version: 1
+generated_from:
+  - terminology.yaml
+  - rights_registry.yaml
+  - stage_map.yaml
+  - feature_flags.yaml
+  - documentation.yaml
+  - identity_graph.public.yaml
+  - crypto_policy.yaml
+
+commercial_model:
+  type: non_profit_participation
+  public_wording:
+    approved:
+      - уровень участия
+      - участие по соглашению
+      - взнос
+      - партнёрское соглашение
+      - аналитические материалы
+      - доступ к данным по соглашению
+    forbidden:
+      - тариф
+      - цена
+      - купить
+      - продажа
+      - коммерческий продукт
+      - прайс-лист
+  rationale: >-
+    НП «Общественное благополучие» и связанные проекты позиционируются как
+    некоммерческая экосистема. Даже если есть взносы или партнёрские соглашения,
+    публичная терминология должна отражать участие, а не продажу.
+
+terminology_mapping:
+  tariff: levels_of_participation
+  price: contribution_rub
+  sale: partner_agreement
+  customer: participant_or_partner
+  vendor: blago-nko_or_san_platform
+  product: service_or_analytical_material
+
+levels_of_participation:
+  observer:
+    stage: -1
+    cost: 0
+    description: "публичное ознакомление без передачи ПДн"
+    allowed:
+      - read_public_pages
+      - read_open_licensed_content
+      - use_rss_if_enabled
+    not_allowed:
+      - submit_personal_data
+      - access_partner_reports
+      - access_reso_feed
+      - white_label
+
+  contributor:
+    stage: 0
+    cost: "optional_contribution_rub"
+    description: "добровольное участие с согласием на обработку введенных данных"
+    allowed:
+      - submit_form_with_consent
+      - receive_acknowledgement
+      - view_own_submission_status
+    data_policy:
+      collection: yandex_cloud_functions_rf_gateway
+      storage: encrypted_payload_rf
+      external_storage_allowed_fields:
+        - lead_id
+        - property_id
+        - agent_id
+        - phone_hash
+        - email_hash
+        - consent_id
+        - status
+        - created_at
+      forbidden_fields:
+        - phone_plain
+        - email_plain
+        - address_text
+        - client_name
+        - ip_plaintext
+        - user_agent_plaintext
+
+  partner:
+    stage: 1
+    cost: "partner_agreement_terms"
+    description: "партнёрский доступ к объектным данным, аналитике и фидам по соглашению"
+    allowed:
+      - reso_object_data_under_agreement
+      - cma_analytical_materials
+      - external_content_feeds
+      - licensed_media_references
+    not_allowed:
+      - plaintext_pii
+      - personal_data_feeds
+      - special_categories_jsonld
+      - ai_training_without_agreement
+    agreement_required: true
+
+  managed_partner:
+    stage: 2
+    cost: "managed_agreement_terms"
+    description: "управляемое участие, белый лейбл, расширенный аудит"
+    allowed:
+      - white_label
+      - managed_deployment
+      - data_partner_access
+      - full_audit_logging
+    constraints:
+      no_plaintext_pii_in_third_party_storage: true
+      manual_deploy_approval_required: true
+      secrets_in_github_actions_org_level: true
+
+services:
+  san_property_cards:
+    owner: san_platform
+    contour: B
+    domain: can.blagorussia.ru
+    engine: Next.js
+    enabled_from_stage: 1
+    licensing:
+      facts: not_copyrightable
+      original_san_content: CC BY-NC 4.0
+      third_party_source_materials: rights_reserved_or_verified_license
+      infrastructure_data: per_source
+      images:
+        max_assets_per_card: 1
+        attribution_required: true
+        feed_allowed: conditional
+        ai_crawler_allowed: false
+        report_allowed: conditional
+    pii_policy:
+      storage: rf_gateway_only
+      vercel_role: compute_only_no_pii_storage
+    jsonld:
+      type: "schema:RealEstateListing"
+      offer_enabled_from_stage: 1
+      offer_style: non_commercial_participation_language
+
+  cma_analytical_materials:
+    owner: san_platform
+    enabled_from_stage: 1
+    public_wording: "аналитические материалы по партнёрскому соглашению"
+    forbidden_wording:
+      - продажа CMA-отчётов
+      - тариф на отчёт
+      - цена отчёта
+    derivative_rights:
+      original_san_content: >-
+        CC BY-NC 4.0 без ND допускает некоммерческие производные, переводы,
+        ремиксы и AI-обработку в рамках соглашения и атрибуции.
+      third_party_materials: >-
+        Сторонние исходные коммерческие предложения, фото, планы, базы данных
+        остаются rights_reserved и требуют отдельного разрешения.
+    nd_policy_note: >-
+      ND-слой не используется для оригинального контента САН, потому что
+      NoDerivatives блокирует переводы, ремиксы и AI-обработку, что противоречит
+      операционной модели аналитических материалов.
+    report_allowed: conditional
+    ai_crawler_allowed: false
+    personal_data_allowed: false
+
+  vac_research_portal:
+    owner: blago-nko
+    domain: vacuum-condensate.obrazslov.ru
+    formerly_known_as: science.obrazslov.ru
+    engine: Astro
+    enabled_from_stage: -1
+    licensing:
+      text: CC BY 4.0
+      code: MIT
+      attribution: "Вакуумный конденсат / blago-nko"
+    jsonld:
+      type: "schema:CreativeWork"
+      layered_license: >-
+        CreativeWork для текста hasPart SoftwareSourceCode для кода.
+    feeds:
+      external_content_feeds_enabled_from_stage: 1
+      personal_data_feeds: forbidden
+
+  genealogy_biography_information:
+    owner: blago-nko
+    canonical_hub: nasa-istoria.blagorussia.ru
+    related_domain: partnerstvo.blagorussia.ru
+    enabled_from_stage: -1
+    publication_basis: >-
+      письменное заявление и согласие Основателя (restricted); special categories public allowed
+      в объёме заявления; публичный JSON-LD minimized_only_for_special_categories.
+    pii_policy:
+      existing_data: keep_as_is
+      new_data_via_form: consent_required
+      minor_child_minimization: true
+      political_affiliation_public_allowed_by_consent: true
+    takedown:
+      procedure_ref: identity_graph.public.yaml access_control.withdrawal_procedure
+      channel: /legal/takedown.html
+
+  public_site_content:
+    owner: blago-nko
+    domains:
+      - blagorussia.ru
+      - obrazslov.ru
+      - partnerstvo.blagorussia.ru
+      - novosti.blagorussia.ru
+      - ot-gorozan.blagorussia.ru
+      - obavlenia.blagorussia.ru
+      - moisites.blagorussia.ru
+      - joga.blagorussia.ru
+      - interesnye-mesta.obrazslov.ru
+      - ideologia.obrazslov.ru
+      - grekpanteon.obrazslov.ru
+    enabled_from_stage: -1
+    licensing_default: ecosystem_default
+    feeds:
+      external_content_feeds_enabled_from_stage: 1
+      personal_data_feeds: forbidden
+
+jsonld_offer_policy:
+  enabled_from_stage: 1
+  type: "schema:Offer"
+  usage: >-
+    Offer используется только для публичной структурированной подачи участия,
+    а не для коммерческой продажи. В публичном тексте доминируют
+    levels_of_participation, contribution_rub, partner_agreement.
+  fields:
+    price:
+      allowed_values:
+        - "0"
+        - contribution_rub
+      priceCurrency: RUB
+      note: >-
+        Для бесплатного участия price=0. Для взносов используется contribution_rub
+        как нейтральная величина взноса, а не цена товара.
+    availability:
+      allowed:
+        - "schema:InStock"
+        - "schema:PreOrder"
+      note: "не использовать aggressive commercial availability language"
+    description:
+      required_terms:
+        - участие
+        - соглашение
+        - взнос
+        - аналитические материалы
+      forbidden_terms:
+        - купить
+        - продажа
+        - тариф
+        - прайс
+  special_categories:
+    public_jsonld: minimized_only
+    reference: documentation.yaml jsonld_policy.consent_aware_rule
+
+legal_constraints:
+  charter_basis:
+    organization: "НП «Общественное благополучие Воронежа»"
+    limitation: >-
+      уставные цели не отменяют права третьих лиц на фото, планы, тексты,
+      логотипы, базы данных и ПДн.
+  rights_registry_ref: rights_registry.yaml
+  crypto_policy_ref: crypto_policy.yaml
+  identity_graph_ref: identity_graph.public.yaml
+  comment_policy_ref: comment_policy.yaml
+
+stage_activation:
+  stage_minus_1:
+    enabled:
+      - observer
+      - public_site_content
+      - vac_research_portal
+      - genealogy_biography_information
+  stage_0:
+    enabled:
+      - contributor
+      - manual_lead_collection_with_consent
+  stage_1:
+    enabled:
+      - partner
+      - san_property_cards
+      - cma_analytical_materials
+      - external_content_feeds
+      - jsonld_offer_policy
+  stage_2:
+    enabled:
+      - managed_partner
+      - white_label
+      - managed_deployment
+      - data_partner_access
+
+forbidden_products:
+  - personal_data_sale
+  - plaintext_pii_export
+  - ai_training_on_personal_data_without_agreement
+  - paid_tariff_language_for_nko_services
+  - ND_locked_san_original_content
+  - video_files_in_r2
+  - personal_data_feeds

@@ -1,0 +1,122 @@
+# Документационный контур монорепозитория blago-nko/ecosystem.
+version: 1
+generated_from:
+  - identity_graph.public.yaml
+  - rights_registry.yaml
+  - storage_policy.yaml
+  - terminology.yaml
+  - domain_rename_map.yaml
+  - restricted://audits/2026-11-san-manifest-audit/transfer-drift-notes.md
+  - KB (schema.org, GitHub Actions, CC BY-NC-ND deed, YouTube/Rutube embeds, partnerstvo сводка)
+
+docs_structure:
+  root: docs/
+  subdirs:
+    frameworks/: {purpose: документация по фреймворкам (Hugo, Astro, Next.js), owner: blago-nko}
+    governance/: {purpose: процессы управления, протоколы, решения, owner: blago-nko}
+    legacy/: {purpose: архивные документы legacy-контуров, owner: blago-nko}
+    processes/:
+      purpose: операционные процессы (backup, infrastructure, migration)
+      owner: blago-nko
+      note: "перенести из archive/legacy-docs/manifests-docs/{backup,infrastructure,migration} на шаге документации"
+    shared/: {purpose: кросс-сайт документация (design tokens, theme boundary), owner: blago-nko}
+    sites/:
+      purpose: посайтковая документация (domains-list, site-specific)
+      owner: blago-nko
+      note: "перенести archive/legacy-docs/manifests-docs/domains-list.md сюда как domains-list.md"
+  canonical_status_doc: docs/STATUS.md
+  canonical_tasks_doc: TASKS.md
+  canonical_roadmap_doc: ROADMAP.md
+
+jsonld_policy:
+  primary_encoding: JSON-LD
+  rationale: >-
+    KB: schema.org 45+ млн доменов, 450+ млрд объектов, JSON-LD — основной encoding;
+    structured data — обязательный канал GEO, но и отдельный канал риска утечки особых категорий.
+  consent_aware_rule: >-
+    Генератор JSON-LD для страниц персон (в т.ч. Основатель (restricted)) ОБЯЗАН читать
+    identity_graph.public.yaml access_control.jsonld_policy. По умолчанию
+    minimized_only_for_special_categories: особые категории (политическая деятельность,
+    несовершеннолетний ребёнок) НЕ сериализуются в публичный Person/ProfilePage JSON-LD
+    без явного расширения scope заявления. Публичные факты (организация, роли, трудовая
+    история, обучение, проекты, книга, derived_summaries) сериализуются.
+  schemas:
+    realestate_listing:
+      type: schema:RealEstateListing
+      applies_to: сан-карточки (can.blagorussia.ru, stage 1+)
+      fields: [name, description, "image (ImageObject)", "offers (Offer, stage 1+, некоммерческая терминология)", "location (Place)", "extraFloor (FloorPlan, только verified_license)"]
+    creative_work:
+      type: schema:CreativeWork
+      applies_to: ["книга Русская идея (author_book)", "проект Образ будущего (lead_author)", "VAC-материалы (vacuum-condensate.obrazslov.ru)"]
+      layered_license_via_haspart: >-
+        VAC: текст CC BY 4.0, код MIT — CreativeWork hasPart SoftwareSourceCode.
+        САН оригинал: CC BY-NC 4.0 (без ND, см. rights_registry.yaml).
+    image_object:
+      type: schema:ImageObject
+      applies_to: ["portrait_bobrov (consent-aware)", "сан-карточки images (max 1, art_1274 gate)", "VAC media (R2 via cdn.obrazslov.ru)"]
+      performance_attributes: "width, height, loading, fetchpriority, decoding; дублировать в contentUrl/width/height"
+    organization:
+      type: schema:NGO
+      applies_to: np_obshchestvennoe_blagopoluchenie
+      fields: ["name (short_name)", "legalName (legal_name)", "foundingDate (2004-12-28)", "foundingLocation (Воронеж)", "description (charter_purpose summary)"]
+    person:
+      type: schema:Person
+      applies_to: bobrov-av
+      minimized_fields_only: true
+      note: >-
+        Публичный JSON-LD — только minimized-слой. restricted_categories
+        (political_affiliation, minor_family_member, residence, dob) НЕ сериализуются
+        без расширения scope заявления. derived_summaries (state_service_years) —
+        публичная производная, сериализуется.
+
+vac_documentation:
+  domain: vacuum-condensate.obrazslov.ru
+  formerly_known_as: science.obrazslov.ru
+  rename_intent: domain_rename_map.yaml
+  license: {text: CC BY 4.0, code: MIT}
+  rationale: "исключение из ЛИЦ.md; научный контент требует открытой лицензии для цитирования/репликации; код MIT для Python-расчётов"
+  layered_jsonld: "CreativeWork (текст CC BY 4.0) hasPart SoftwareSourceCode (код MIT); attribution: Вакуумный конденсат / blago-nko"
+
+shared_assets_documentation:
+  submodule_status: cancelled
+  monorepo_decision: A1.1
+  note: "git-submodule отменён; сайты подключают тему relative-mount (hugo/astro/next/web/rss)"
+  css_consistency: "CSS-переменные (--space/--font/--color/--radius), без дублей, !important только критично; design-tokens.css .site-logo — живой override-каскад, НЕ удалять механически (ownership.yaml overrides.design_tokens_dead_dup)"
+
+obrazslov_documentation:
+  pagefind_glob: "**/*.html"
+  rule: "не менять glob без перехода на pretty-URLs + 301; сохранение Blogger URL (ownership.yaml overrides.pagefind_glob_preserve)"
+  semantic_html: "ровно один <h1> на главной, семантическая разметка, .GetTerms, post-wrapper"
+
+status_drift:
+  issue: "docs/STATUS.md (автоген) = 7 манифестов / САМ 2.14-н; manifests.yaml = 8 / САМ 2.15-н; физически 8 .md"
+  affected_files: [docs/STATUS.md, manifests/registry/manifests.yaml]
+  task_for_update_status_py: "update_status.py: (1) покрывать VAC (8-й); (2) читать версии из manifests.yaml (2.15-н), не snapshot; (3) 8 строк таблицы"
+  severity: high
+  blocking_push: false
+  note: "K1 drift; источник правды — manifests.yaml, не STATUS.md; чинить генератор, не вручную"
+
+video_documentation:
+  status: broken_embeds_and_privacy_risk
+  evidence:
+    youtube: "KB: signed-out + watch history influence recommendations + error retrieving sharing info — embed сломан И privacy-след"
+    rutube: "KB: «Что-то сломалось, уже чиним» — второй источник слома"
+  privacy_insight: >-
+    YouTube embed на сайте НКО влияет на watch history/рекомендации посетителя =
+    нежелательный трекинг третьей стороной. Embed'ы — не только надёжностной, но и privacy-риск.
+  policy: >-
+    Автопубликация видео строго stage 1+ (feature_flags.yaml). Запрет хранения видео в R2
+    (storage_policy.yaml forbidden: video_files). Embed health check обязателен. При активации
+    embed'а — privacy notice. Альтернатива: текстовое описание + прямая ссылка (без плеера),
+    чтобы не создавать watch-history-след на стороне посетителя.
+  rationale: "сломанные embeds + privacy-след = двойной риск; приоритет надёжности и приватности (memory 11)"
+
+comment_documentation:
+  presence_evidence: "KB: partnerstvo «## Комментарии» + nasa-istoria (по выдержкам)"
+  policy_ref: comment_policy.yaml (part 2b)
+  rule: "архив в git (archive/blogger/{site}/comments/), скрыть на сайте, без PII-scan; будущие: stage 0 disabled, stage 1 giscus-with-consent"
+
+accessibility_seo:
+  aria_semantic: "aria-атрибуты, role, семантические теги; тултипы к изображениям по alt/подписям; alt обязателен"
+  performance: "width/height/loading/fetchpriority/decoding; WebP/AVIF автоконверсия; адаптивный логотип"
+  localization: "config.toml defaultContentLanguage/languageCode; даты на русском; метаданные в одну строку (Flexbox)"

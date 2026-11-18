@@ -1,0 +1,65 @@
+# PII крипто-политика
+# Единый контур для экосистемы, но с разными уровнями строгости по доменам.
+version: 1
+
+pii_architecture:
+  stage_minus_1:
+    pdn: forbidden
+    google_sheets: no_pii_columns
+
+  stage_0:
+    collection: yandex_cloud_functions_rf_gateway
+    encryption: aes_256_gcm
+    key_management: yandex_lockbox
+    storage:
+      encrypted_payload: yandex_object_storage_or_managed_postgres_rf
+      supabase_allowed_fields:
+        - lead_id
+        - property_id
+        - agent_id
+        - phone_hash
+        - email_hash
+        - consent_id
+        - status
+        - created_at
+      supabase_forbidden_fields:
+        - phone_encrypted
+        - email_encrypted
+        - address_text
+        - client_name
+        - ip_plaintext
+        - user_agent_plaintext
+    blind_index:
+      algorithm: hmac_sha256
+      pepper_source: yandex_lockbox
+      rotation_days: 180
+
+  stage_1:
+    storage: yandex_managed_postgres_or_self_hosted_rf
+    supabase: deprecated_for_pii
+
+  stage_2:
+    storage: kms_hsm_full_audit
+
+domain_strictness:
+  san: highest
+  nasa_istoria: biographies_existing_keep_new_consent
+  partnerstvo: biographies_existing_keep_new_consent
+
+biography_policy:
+  existing_data: keep_as_is
+  new_data_via_form: consent_required
+  # Публичное размещение биографии Основателя (restricted) допустимо на основании
+  # письменного заявления и согласия (ст. 10 ч. 1.1 152-ФЗ, ст. 152.1 ГК РФ).
+  # Детали и механизм отзыва: identity_graph.public.yaml access_control.consent_basis / withdrawal_procedure.
+  public_placement:
+    bobrov_av:
+      allowed: true
+      basis: "письменное заявление и согласие на безотзывное размещение ПДн в открытом публичном доступе"
+      legal_reference:
+        - "ст. 10 ч. 1.1 152-ФЗ"
+        - "ст. 9 152-ФЗ"
+        - "ст. 152.1 ГК РФ"
+      scope: "все ПДн в биографии, включая особые категории и изображение; объём = объём заявления"
+      revocability: "согласие может быть отозвано по ст. 9 ч. 2 152-ФЗ; withdrawal_procedure в identity_graph.public.yaml"
+      minor_child_minimization: "имя ребёнка не фиксируется; только пол и год рождения; страхование интересов ребёнка (ст. 54 СК РФ)"
