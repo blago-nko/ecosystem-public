@@ -10,6 +10,7 @@ sync_manifests.py НЕ должен писать STATUS.md.
 """
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
 
 import yaml
 
@@ -34,6 +35,17 @@ def status_icon(status):
 
 
 def main():
+    args = sys.argv[1:]
+    if args in (["--help"], ["-h"]):
+        print("Usage: python scripts/registry/update_status.py")
+        print("Regenerates docs/STATUS.md from manifests/registry sources.")
+        print("Run without arguments to update. --help/-h do not write.")
+        return
+    if args:
+        print(f"ERROR: unsupported arguments: {' '.join(args)}", file=sys.stderr)
+        print("Run without arguments or with --help.", file=sys.stderr)
+        raise SystemExit(2)
+
     manifests = load_yaml("manifests/registry/manifests.yaml").get("manifests", [])
     graph = load_yaml("manifests/registry/domains-graph.yaml")
     domains = graph.get("domains", [])
@@ -155,7 +167,7 @@ def main():
         f"**Последнее обновление**: {stamp}",
         "",
     ]
-    (ROOT / "docs" / "STATUS.md").write_text("\n".join(lines), encoding="utf-8")
+    (ROOT / "docs" / "STATUS.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")
     print(f"STATUS.md обновлён: манифестов — {len(manifests)}, доменов — {len(domains)}, реестров — {registry_count}")
 
 
