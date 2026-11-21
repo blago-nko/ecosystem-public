@@ -16,7 +16,7 @@
 | archive/legacy-tests/ | Архив тестов и фикстур, переносится в tests/, REG-018 |
 | archive/legacy-docs/ | Архив документации старого репозитория |
 | audits/ | Аудиты и заметки о переносе и drift |
-| scripts/, tests/, .github/workflows/ | Целевые каталоги операционного контура, пока пусты, см. REG-016..018 |
+| scripts/, tests/, .github/workflows/ | Опубликован минимальный operational skeleton: update_status.py, STATUS tests, update-status workflow и GitHub config placeholders; полный registry pipeline остаётся в restricted/ORIG контуре |
 | sites/, apps/, shared-assets/ | Целевые каталоги сайтов, приложений и общих ассетов |
 
 ## Реестры manifests/registry/
@@ -75,7 +75,7 @@
 
 ## Текущее состояние
 
-Монорепа формируется. Операционный контур scripts/, .github/workflows/ и tests/ пока находится в archive/legacy-* и переносится по задачам REG-016..018. docs/STATUS.md перегенерируется interim-методом из реестров по задаче REG-013 до починки update_status.py по задаче REG-014.
+Монорепа формируется. Опубликован минимальный operational skeleton: scripts/registry/update_status.py, tests/, .github/workflows/update-status.yml и GitHub config placeholders. Полный registry pipeline (sync_manifests.py, apply_l0_contour.py, validation harness) остаётся в restricted/ORIG контуре и не публикуется как есть. Legacy-архивы archive/legacy-* сохраняются до завершения переноса по задачам REG-016..018. docs/STATUS.md перегенерируется interim-методом из реестров по задаче REG-013 до починки update_status.py по задаче REG-014.
 
 Живые метрики: docs/STATUS.md. Реестр задач: TASKS.md. Долгосрочный план: ROADMAP.md. Инструкции агентам: manifests/AGENTS.md.
 
