@@ -6,7 +6,7 @@ generated_from:
   - archive/legacy-tests/
   - .gitattributes
   - restricted://audits/2026-11-san-manifest-audit/transfer-drift-notes.md
-  - KB (GitHub Actions: matrix, multi-container, workflow_dispatch + Publish approval, secret store, ghcr.io, free public)
+  - "KB (GitHub Actions: matrix, multi-container, workflow_dispatch + Publish approval, secret store, ghcr.io, free public)"
 
 ci_capabilities:
   hosted_runners:
@@ -25,10 +25,11 @@ ci_capabilities:
     applies_to: stage_0_pii_gateway
     note: "stage 0 PII gateway = web service + DB → тестировать вместе через docker-compose"
   workflow_triggers:
-    - push
-    - issue_creation
-    - new_release
-    - workflow_dispatch
+    triggers:
+      - push
+      - issue_creation
+      - new_release
+      - workflow_dispatch
     note: >-
       KB-скриншот matrix-build-deploy.yml: стадия Publish «pending and waiting for approval» =
       первый-class паттерн ручного подтверждения. workflow_dispatch / environment approval →
@@ -47,11 +48,11 @@ ci_capabilities:
 scripts_structure:
   root: scripts/
   subdirs:
-    registry/: {purpose: синхронизация манифестов, проверка TASKS/STATUS, архитектурные патчи}
-    security/: {purpose: сканеры ПДн, лицензионные проверки}
-    media/: {purpose: обработка изображений, R2-загрузка, адаптеры хранения}
-    seo/: {purpose: проверка ссылок, sitemap, robots, ai-hints}
-    migration/: {purpose: экспорт Blogger, парсинг, миграция ссылок, url_mapping}
+    registry/: {purpose: "синхронизация манифестов, проверка TASKS/STATUS, архитектурные патчи"}
+    security/: {purpose: "сканеры ПДн, лицензионные проверки"}
+    media/: {purpose: "обработка изображений, R2-загрузка, адаптеры хранения"}
+    seo/: {purpose: "проверка ссылок, sitemap, robots, ai-hints"}
+    migration/: {purpose: "экспорт Blogger, парсинг, миграция ссылок, url_mapping"}
 
 script_mapping:
   - {legacy_path: archive/legacy-scripts/manifests-scripts/apply_arch_patches.py, target: scripts/registry/apply_arch_patches.py, category: registry, status: to_migrate, note: "связан с workflow apply-architecture-patches.yml"}
