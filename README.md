@@ -75,7 +75,7 @@
 
 ## Текущее состояние
 
-Монорепа формируется. Опубликован минимальный operational skeleton: scripts/registry/update_status.py, tests/, .github/workflows/update-status.yml и GitHub config placeholders. Полный registry pipeline (sync_manifests.py, apply_l0_contour.py, validation harness) остаётся в restricted/ORIG контуре и не публикуется как есть. Legacy-архивы archive/legacy-* сохраняются до завершения переноса по задачам REG-016..018. docs/STATUS.md перегенерируется interim-методом из реестров по задаче REG-013 до починки update_status.py по задаче REG-014.
+Монорепа формируется. Опубликован минимальный operational skeleton: scripts/registry/update_status.py, tests/, .github/workflows/update-status.yml и GitHub config placeholders. Полный registry pipeline (sync_manifests.py, apply_l0_contour.py, validation harness) остаётся в restricted/ORIG контуре и не публикуется как есть. Legacy-архивы archive/legacy-* сохраняются до завершения переноса по задачам REG-016..018. docs/STATUS.md генерируется scripts/registry/update_status.py и согласован с машиночитаемыми реестрами.
 
 Живые метрики: docs/STATUS.md. Реестр задач: TASKS.md. Долгосрочный план: ROADMAP.md. Инструкции агентам: manifests/AGENTS.md.
 
