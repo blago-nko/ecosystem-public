@@ -472,6 +472,7 @@
 | **REG-006** | `comment_policy.yaml` | `manifests/registry/comment_policy.yaml` | 🟠 | 🤖→👤 | ✅ | коммит `restricted backup`; архив комментариев, no auto PII-scan, giscus-with-consent |
 | **REG-007** | `product_catalog.yaml` | `manifests/registry/product_catalog.yaml` | 🟠 | 🤖→👤 | ✅ | коммит `restricted backup`; некоммерческая терминология, ND-политика, Offer stage 1+ |
 | **REG-008** | `derived_summaries.state_service_years` (точная формула 6+4=10) | `manifests/registry/identity_graph.public.yaml` | 🔴 | 🤖→👤 | ✅ | источник в restricted backup; municipal_administration 6 + military_service_credit x2 = 4 |
+| **REG-014** | Починить `update_status.py`: пути + draft ⚪ + динамические цели + docstring к факту | `scripts/registry/update_status.py` | 🔴 | 🤖→👤 | ✅ | выполнено: пути `manifests/registry/*`, динамические счётчики без хардкода 14/7, `⚪` для draft, docstring синхронизирован с `DD.MM.YYYY (UTC)`; опубликовано в `325d005` и `5ec0448` |
 
 ### Активные
 
@@ -481,8 +482,7 @@
 | **REG-010** | Создать корневой `README.md` монорепы | `README.md` | 🔴 | 🤖→👤 | ⬜ | Сейчас пустой tracked-файл; структура + лицензии + принципы |
 | **REG-011** | Восстановить `.gitignore` под монорепу | `.gitignore` | 🟠 | 🤖 | ⬜ | Сейчас пустой tracked-файл; Python/Hugo/Astro/Node/секрети; не влияет на уже отслеженные archive |
 | **REG-012** | Восстановить `.markdownlint-cli2.jsonc` | `.markdownlint-cli2.jsonc` | 🟡 | 🤖 | ⬜ | Сейчас пустой tracked-файл; MD013/MD033/MD041 relax, ignores сгенерированных каталогов |
-| **REG-013** | Interim-перегенерация `docs/STATUS.md` из реестров | `docs/STATUS.md` | 🔴 | 🤖→👤 | ⬜ | Устранить K1-drift: 8 манифестов, 15 контентных доменов, VAC ⚪, источники `manifests/registry/*` |
-| **REG-014** | Починить `update_status.py`: пути + draft ⚪ + динамические цели + docstring к факту | `scripts/registry/update_status.py` | 🔴 | 🤖→👤 | ⬜ | `docs/manifests.yaml` -> `manifests/registry/manifests.yaml`; `domains-graph.yaml` -> `manifests/registry/`; убрать хардкод 14/7; иконка ⚪ для draft; docstring обещает HH:MM UTC, код пишет DD.MM.YYYY — синхронизировать |
+| **REG-013** | Interim-перегенерация `docs/STATUS.md` из реестров | `docs/STATUS.md` | 🔴 | 🤖→👤 | 🔄 | interim-перегенерация выполнена: в `docs/STATUS.md` зафиксированы `Реестров YAML = 16`, `Машиночитаемых реестров = 16`, VAC `⚪`, источники `manifests/registry/*`; закрепление как постоянного контракта ожидает `REG-015` |
 | **REG-015** | Починить `sync_manifests.py`: REGISTRY path | `scripts/registry/sync_manifests.py` | 🟠 | 🤖 | ⬜ | Тот же переезд источника правды; не писать STATUS (контракт INFRA-029) |
 | **REG-016** | Перенос 21 script/config `archive` -> `scripts/` | `scripts/` | 🟠 | 🤖→👤 | ⬜ | Только после ревью; см. `artifacts.yaml` script_mapping |
 | **REG-017** | Перенос 13 workflows `archive` -> `.github/workflows/` | `.github/workflows/` | 🟠 | 🤖→👤 | ⬜ | Обновить префиксы после REG-009; включить tests.yml, update-status.yml, pr-prefix-check.yml |
