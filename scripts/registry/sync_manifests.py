@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """sync_manifests.py — автоматическая синхронизация реквизитов манифестов.
 
-Единый источник правды: docs/manifests.yaml.
+Единый источник правды: manifests/registry/manifests.yaml.
 
 Логика:
-1. Читает реестр docs/manifests.yaml.
+1. Читает реестр manifests/registry/manifests.yaml.
 2. Для каждого манифеста вырезает сгенерированные блоки, считает hash
    «чистого» текста и сравнивает с content_hash из реестра:
    - hash пустой (первый запуск) -> инициализация hash без повышения версии;
@@ -18,6 +18,8 @@
 6. Проверяет существование файлов и ссылок.
 
 Зависимости: pyyaml
+
+Контракт INFRA-029: sync_manifests.py НЕ пишет docs/STATUS.md (единственный писатель — scripts/registry/update_status.py).
 """
 
 import hashlib
@@ -29,8 +31,8 @@ from pathlib import Path
 
 import yaml
 
-ROOT = Path(__file__).resolve().parent.parent
-REGISTRY = ROOT / "docs" / "manifests.yaml"
+ROOT = Path(__file__).resolve().parent.parent.parent
+REGISTRY = ROOT / "manifests" / "registry" / "manifests.yaml"
 README = ROOT / "README.md"
 
 META_BEGIN = "<!-- MANIFEST:METADATA:BEGIN -->"
@@ -146,11 +148,11 @@ def rebuild(clean: str, meta: str, related: str) -> str:
 
 def main() -> None:
     if not REGISTRY.exists():
-        fail("не найден docs/manifests.yaml")
+        fail("не найден manifests/registry/manifests.yaml")
     data = yaml.safe_load(REGISTRY.read_text(encoding="utf-8")) or {}
     manifests = data.get("manifests") or []
     if not manifests:
-        fail("в docs/manifests.yaml нет списка manifests")
+        fail("в manifests/registry/manifests.yaml нет списка manifests")
 
     for m in manifests:
         for key in ("file", "short_title", "title", "description",
@@ -217,8 +219,6 @@ def main() -> None:
             print("✅ Таблица в README.md обновлена")
         else:
             print("⚠️  В README.md нет маркеров MANIFESTS:TABLE")
-
-    # --- таблица в STATUS.md ---
 
     # --- файлы манифестов ---
     active = [m for m in manifests if m["status"] == "active"]
