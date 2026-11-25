@@ -106,9 +106,9 @@
 | # | Риск | Вероятность | Влияние | Митигация |
 |:-:|:-----|:-----------:|:-------:|:----------|
 | 1 | Таксономия domains-graph пуста (INFRA-020) | Высокая | Средняя | Задача в реестре |
-| 2 | sync_manifests.py содержит блок записи STATUS (нарушает INFRA-029); требует полного ревью | Высокая | Высокая | REG-015 |
+| 2 | sync_manifests.py relocated and repaired; STATUS not written (INFRA-029). Activation deferred until workflow migration and MANIFEST:RELATED relative-link fix | Низкая | Средняя | REG-016/017 |
 | 3 | domain_rename_map.yaml pending; science.obrazslov.ru / r2.blagorussia.ru как known drift | Средняя | Средняя | REG-020 |
 | 4 | Пустые tracked LICENSE-CODE / LICENSE-TEXT | Низкая | Низкая | REG-019 |
 | 5 | Runtime-валидация update_status.py отложена до CI (Python локально недоступен) | Высокая | Средняя | REG-017 после push |
 
-**Последнее обновление**: 22.11.2026
+**Последнее обновление**: 25.11.2026
