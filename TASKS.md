@@ -214,7 +214,7 @@
 | `scripts/image_storage_adapter.py` | САМ | ✅ Проверено (VERIFY-001/002/003) | VERIFY-001 | ✅ Да |
 | `scripts/pdn_scanner.py` | САН | ✅ Проверено (VERIFY-001/002/003) | VERIFY-001 | ✅ Да |
 | `scripts/sanitize_images.py` | САМ/СУМКа | ✅ Проверено (VERIFY-001/002/003) | VERIFY-001 | ✅ Да |
-| `scripts/sync_manifests.py` | САМ | ✅ Проверено (VERIFY-001/002/003) | VERIFY-001 | ✅ Да |
+| `scripts/registry/sync_manifests.py` | САМ | ✅ Проверено (VERIFY-001/002/003); опубликовано в sanitized (REG-015, PR #2) | VERIFY-001 / REG-015 | ✅ Да |
 | `scripts/sync_readme_licenses.py` | ЛИЦ | ✅ Проверено (VERIFY-001/002/003) | VERIFY-001 | ✅ Да |
 | `scripts/sync_readme_sections.py` | САМ | ✅ Проверено (VERIFY-001/002/003) | VERIFY-001 | ✅ Да |
 | `scripts/update_status.py` | САМ/СУМКа | ✅ Проверено (VERIFY-001/002/003) | VERIFY-001 | ✅ Да |
@@ -482,8 +482,8 @@
 | **REG-010** | Создать корневой `README.md` монорепы | `README.md` | 🔴 | 🤖→👤 | ⬜ | Сейчас пустой tracked-файл; структура + лицензии + принципы |
 | **REG-011** | Восстановить `.gitignore` под монорепу | `.gitignore` | 🟠 | 🤖 | ⬜ | Сейчас пустой tracked-файл; Python/Hugo/Astro/Node/секрети; не влияет на уже отслеженные archive |
 | **REG-012** | Восстановить `.markdownlint-cli2.jsonc` | `.markdownlint-cli2.jsonc` | 🟡 | 🤖 | ⬜ | Сейчас пустой tracked-файл; MD013/MD033/MD041 relax, ignores сгенерированных каталогов |
-| **REG-013** | Interim-перегенерация `docs/STATUS.md` из реестров | `docs/STATUS.md` | 🔴 | 🤖→👤 | 🔄 | interim-перегенерация выполнена: в `docs/STATUS.md` зафиксированы `Реестров YAML = 16`, `Машиночитаемых реестров = 16`, VAC `⚪`, источники `manifests/registry/*`; закрепление как постоянного контракта ожидает `REG-015` |
-| **REG-015** | Починить `sync_manifests.py`: REGISTRY path | `scripts/registry/sync_manifests.py` | 🟠 | 🤖 | ⬜ | Тот же переезд источника правды; не писать STATUS (контракт INFRA-029) |
+| **REG-013** | Interim-перегенерация `docs/STATUS.md` из реестров | `docs/STATUS.md` | 🔴 | 🤖→👤 | ✅ | закреплено как постоянный контракт после REG-014/REG-015: `update_status.py` — единственный писатель `docs/STATUS.md` (INFRA-029), `sync_manifests.py` не пишет STATUS; interim-значения `Реестров YAML = 16`, `Машиночитаемых реестров = 16`, VAC `⚪`, источники `manifests/registry/*` подтверждены |
+| **REG-015** | Починить `sync_manifests.py`: REGISTRY path + related links + draft icon | `scripts/registry/sync_manifests.py` | 🟠 | 🤖→👤 | ✅ | выполнено: source of truth `manifests/registry/manifests.yaml`; PR #1 (база/STATUS-risk, `7675bc4`/`58567ba`), PR #2 (related/draft, `e468b61`, SHA `0de26bea1ae1cb35bb8d9a8ac2ef53196dcae08850de3e96d60ffbddec434bca`), PR #3 (README align, `b688fa7`); INFRA-029 сохранён: sync не пишет `docs/STATUS.md`; `related_block` uses `relative_to(current_dir)`, honors `related_title`, draft `⚪` |
 | **REG-016** | Перенос 21 script/config `archive` -> `scripts/` | `scripts/` | 🟠 | 🤖→👤 | ⬜ | Только после ревью; см. `artifacts.yaml` script_mapping |
 | **REG-017** | Перенос 13 workflows `archive` -> `.github/workflows/` | `.github/workflows/` | 🟠 | 🤖→👤 | ⬜ | Обновить префиксы после REG-009; включить tests.yml, update-status.yml, pr-prefix-check.yml |
 | **REG-018** | Перенос 6 тестов `archive` -> `tests/` + обновление snapshot | `tests/` | 🟠 | 🤖→👤 | ⬜ | Пути `scripts/registry/update_status.py`; секция `Состояние N доменов` динамически (сейчас ждёт 14, станет 15) |
