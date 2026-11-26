@@ -16,7 +16,7 @@
 | archive/legacy-tests/ | Архив тестов и фикстур, переносится в tests/, REG-018 |
 | archive/legacy-docs/ | Архив документации старого репозитория |
 | audits/ | Аудиты и заметки о переносе и drift |
-| scripts/, tests/, .github/workflows/ | Опубликован минимальный operational skeleton: update_status.py, STATUS tests, update-status workflow и GitHub config placeholders; полный registry pipeline остаётся в restricted/ORIG контуре |
+| scripts/, tests/, .github/workflows/ | Опубликован operational skeleton: update_status.py (REG-014), sync_manifests.py (REG-015), STATUS tests, update-status workflow и GitHub config placeholders; apply_l0_contour.py и validation harness остаются в restricted/ORIG контуре до REG-016..018 |
 | sites/, apps/, shared-assets/ | Целевые каталоги сайтов, приложений и общих ассетов |
 
 ## Реестры manifests/registry/
@@ -75,7 +75,7 @@
 
 ## Текущее состояние
 
-Монорепа формируется. Опубликован минимальный operational skeleton: scripts/registry/update_status.py, tests/, .github/workflows/update-status.yml и GitHub config placeholders. Полный registry pipeline (sync_manifests.py, apply_l0_contour.py, validation harness) остаётся в restricted/ORIG контуре и не публикуется как есть. Legacy-архивы archive/legacy-* сохраняются до завершения переноса по задачам REG-016..018. docs/STATUS.md генерируется scripts/registry/update_status.py и согласован с машиночитаемыми реестрами.
+Монорепа формируется. Опубликован минимальный operational skeleton: scripts/registry/update_status.py, scripts/registry/sync_manifests.py, tests/, .github/workflows/update-status.yml и GitHub config placeholders. sync_manifests.py опубликован в sanitized-контуре (REG-015); apply_l0_contour.py и validation harness остаются в restricted/ORIG контуре и не публикуются как есть до REG-016..018. Legacy-архивы archive/legacy-* сохраняются до завершения переноса по задачам REG-016..018. docs/STATUS.md генерируется scripts/registry/update_status.py и согласован с машиночитаемыми реестрами.
 
 Живые метрики: docs/STATUS.md. Реестр задач: TASKS.md. Долгосрочный план: ROADMAP.md. Инструкции агентам: manifests/AGENTS.md.
 
