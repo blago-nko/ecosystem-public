@@ -44,7 +44,7 @@ TABLE_END = "<!-- MANIFESTS:TABLE:END -->"
 
 STATUS_LABELS = {
     "active": "🟢 Активен",
-    "draft": "🟡 Черновик",
+    "draft": "⚪ Черновик",
     "archived": " Архив",
 }
 
@@ -123,12 +123,20 @@ BULLET_STYLE = {"ЛИЦ.md": "-"}  # SAM-INFRA-010: MD004 — маркер по 
 
 
 def related_block(m: dict, active: list) -> str:
-    bullet = BULLET_STYLE.get(m["file"], "-")
+    current_path = Path(m["file"])
+    current_dir = current_path.parent
+    bullet = BULLET_STYLE.get(current_path.name, "-")
     lines = ["## Связанные документы", ""]
     for other in active:
         if other["file"] == m["file"]:
             continue
-        lines.append(f"{bullet} [{other['short_title']} — {other['title']}]({other['file']})")
+        other_path = Path(other["file"])
+        try:
+            link = other_path.relative_to(current_dir).as_posix()
+        except ValueError:
+            link = other_path.as_posix()
+        display_title = other.get("related_title") or other["title"]
+        lines.append(f"{bullet} [{other['short_title']} — {display_title}]({link})")
     return f"{REL_BEGIN}\n\n" + "\n".join(lines) + f"\n\n{REL_END}"
 
 
