@@ -16,11 +16,11 @@
 | 13 сайтов на Hugo | 🟢 Функционируют на Blogger |
 | Пантеон | 🟢 Функционирует на Blogger, ~350 страниц (цель 16 505) |
 | САН | 🟢 Функционирует на Blogger |
-| gallery | 🟡 Создан, виден в сети, без контента и оформления |
+| gallery | ❌ Удалён из активной архитектуры (DR-MEDIA M1); link-remediation — MEDIA-001 |
 | Science (Vacuum Condensate) | 🟡 Зарегистрирован в графе, репо создан, ожидает наполнения |
 | Контент | ✅ Жив на Blogger — подлежит перепарсиванию |
 | `shared-assets` | ❌ Удалён при сбросе 11.09.2026, пересоздаётся (задача INFRA-010) |
-| `can-secure-dev` | 🟡 Org существует, пуста |
+| `can-secure-dev` | ❌ Org отменена (DR-SAN S1); контур B — логический в монорепе (DR-SAN S2) |
 | Домены / DNS | ✅ Зарегистрированы, ведут на старые сайты (Blogger); science.obrazslov.ru готов к CNAME |
 | Secrets | ⚠️ Не проверены после сброса |
 
@@ -32,6 +32,68 @@
 **Приоритеты:** 🔴 Критический · 🟠 Высокий · 🟡 Средний · 🟢 Низкий
 **Фазы:** `0 Фундамент` → `1 Каркас` → `2 Наполнение/Миграция`
 **Имя определено:** ✅ Да (можно сразу создавать/проверять) · ❌ Нет (концепт, требуется проектирование)
+
+---
+
+---
+
+## Canonical Decision Records
+
+> Решения основателей, на которые ссылаются протоколы. Утверждены 2026-11-28. Префиксы задач реализации: `MEDIA-` (временный operational-префикс до утверждения в САМ §1.5, по аналогии с `REG-`, задача REG-009) и `CAN-` серия 101+ (зарезервирована под DR-SAN).
+
+### DR-MEDIA — Галерея и изображения
+
+| ID | Решение | Описание |
+| :--- | :--- | :--- |
+| **M1** | Удаление gallery.obrazslov.ru | Тестовый Blogger-фотоархив удаляется из активной архитектуры (remove_from_active_architecture_and_delete_site). Отдельный публичный «ФОТОАРХИВ НКО» не требуется. |
+| **M2** | Preserve Blogger URLs | Старые изображения мигрирующих сайтов остаются по ИСХОДНЫМ Blogger URL самих сайтов (не gallery). preserve — переходная мера: исходный Blogger-сайт нельзя отключать, пока на него ссылается активный мигрированный контент; перед отключением — перенос в R2 + перепись ссылок (Link Preservation до Asset Consolidation). |
+| **M3** | R2-only для новых изображений | Все НОВЫЕ изображения всех контуров (Hugo/Astro/Next/САН/Пантеон/Наука/будущие) — только Cloudflare R2. Публичный медиа-домен: cdn.obrazslov.ru. Новые загрузки в Blogger запрещены. |
+| **M4** | Форматы/размеры | WebP обязательный, AVIF — canonical_for в storage_policy; сетка 400/800/1200/1600, max 1600px; EXIF-strip. Точные числа подтверждаются аудитом, финализация в MIG-017 / media-pipeline протоколе. |
+| **M5** | Схема путей R2 | `/media/{site-key}/{page-slug}/{image-basename}-{width}.webp` — финализация в MIG-017. |
+| **M6** | Метаданные | Минимум: alt, title, license, source, author, consent, original_url; расширенный набор (site_key, page_slug, image_id, widths, formats, hash, pii_redacted, ai_safe, cdn_path, r2_key) — во front matter/asset-config + sidecar JSON/R2 object metadata; финализация в MIG-017. |
+| **M7** | Link-remediation | Перед фактическим удалением домена — найти и убрать/заменить ВСЕ активные ссылки вида https://gallery.obrazslov.ru/... (контент, шаблоны, примеры JSON-LD, hotlink-схемы), чтобы не оставить 404 и чтобы агенты не продолжали использовать удалённый домен как канон. |
+
+### DR-SAN — Отказ от can-secure-dev, ПДн в монорепе, ИИ-аккаунт
+
+| ID | Решение | Описание |
+| :--- | :--- | :--- |
+| **S1** | Отмена can-secure-dev | Отдельная GitHub-организация/аккаунт can-secure-dev ОТМЕНЕНА. Не создаётся; все ссылки в нормативке и реестрах переводятся на монорепу blago-nko/ecosystem-public. |
+| **S2** | Логический контур B | Контур B остаётся как ЛОГИЧЕСКИЙ/deployment-контур ПДн внутри монорепы, а не как отдельный GitHub org: repository: blago-nko/ecosystem-public + logical_contour: B + deployment_environment + pii_boundary: rf_gateway + pii_in_git: forbidden. |
+| **S3** | Этап 1 (Hugo) | can.blagorussia.ru — статический Hugo-сайт в монорепе (GitHub Pages). Hugo ПДн не хранит и не обрабатывает; первичный сбор ПДн — через Яндекс (Yandex Forms / approved Yandex endpoint). ПДн в Git запрещены; допустимы только ссылки на формы, политики согласия, synthetic-примеры, конфигурация без PII. |
+| **S4** | Этап 2+ (динамический) | Next.js + Vercel + Supabase ОСТАЮТСЯ в плане, но внутри монорепы (напр. apps/san/), деплой через защищённые GitHub Environments; Supabase принимает только зашифрованные payload / non-PII derived data через RF gateway (Yandex Cloud Functions — уточняется аудитом по crypto_policy.yaml); Vercel — только UI/SSR, без хранения ПДн. |
+| **S5** | Изоляция ПДн без отдельного org | Компенсируется: no PII in Git; no plaintext PII в issues/PR/logs/fixtures/tests/examples; GitHub Environments + protected secrets; branch protection; CODEOWNERS/review policy для чувствительных путей; RF gateway/Yandex-граница сбора; encrypted-storage only; audit trail привилегий. |
+| **S6** | ИИ-аккаунт | Отдельный аккаунт Основателя с ALTERNATE EMAIL (человеческий founder-контролируемый). Полный repo admin допустим как явное risk-accepted исключение из least-privilege. Исключение НЕ отменяет: ПДн в Git запрещены; ИИ получает только non-PII/redacted данные; redaction/tokenization gate перед зарубежным ИИ-API; production secrets — через environments; действия аудируемы. |
+| **S7** | Конфликт этапов | Изоляция контура B — после финальной проверки сайтов (Этап 7) по STRATEGY.md; MIG-014 с «после Этапа 6» приводится к Этапу 7 / монорепной модели. |
+| **S8** | MIG-022 отменено | MIG-022 остаётся ❌ Отменено, причина уточняется: отменён прямой переход в отдельный can-secure-dev; вместо него — монорепная поэтапная модель (Hugo этап 1 → dynamic этап 2+ в той же монорепе). |
+
+---
+
+## DR-MEDIA Tasks (галерея и изображения)
+
+Удаление gallery.obrazslov.ru и переход на R2-only модель хранения. Префикс: `MEDIA-` (временный operational, см. примечание выше).
+
+| ID | Задача | Подзадачи | Приор. | Ответств. | Статус | Комментарий |
+| :--- | :--- | :--- | :---: | :--- | :---: | :--- |
+| **MEDIA-001** | Link-remediation gallery.obrazslov.ru | Найти и удалить/заменить ВСЕ ссылки на gallery.obrazslov.ru в манифестах, шаблонах, JSON-LD, hotlink-схемах | 🔴 | 🤖→👤 | ⬜ | DR-MEDIA M7 |
+| **MEDIA-002** | storage_policy.yaml: схема путей и метаданные | Добавить path scheme M5, metadata schema M6, width grid M4; сверить запрет новых загрузок в Blogger | 🔴 | 🤖→👤 | ⬜ | DR-MEDIA M3–M6 |
+| **MEDIA-003** | domains-graph.yaml: узел gallery | Перевести узел gallery в deprecated/remove, убрать из активных связей | 🟠 | 🤖→👤 | ⬜ | DR-MEDIA M1 |
+| **MEDIA-004** | MIG-017 / media-pipeline протокол | Финализация форматов, сетки размеров и путей R2 в протоколе media-pipeline | 🟠 | 🤖→👤 | ⬜ | DR-MEDIA M4–M6 |
+| **MEDIA-005** | shared-assets: image_storage_routing.json | Маршрутизация: Blogger только preserve легаси (M2), новые — R2 (M3) | 🟠 | 🤖→👤 | ⬜ | DR-MEDIA M2, M3 |
+
+---
+
+## DR-SAN Tasks (монорепная модель САН)
+
+Отмена can-secure-dev, контур B как логический контур монорепы. Префикс: `CAN-` серия 101+.
+
+| ID | Задача | Подзадачи | Приор. | Ответств. | Статус | Комментарий |
+| :--- | :--- | :--- | :---: | :--- | :---: | :--- |
+| **CAN-101** | САН.md: убрать can-secure-dev | Переписать раздел 19 и все упоминания: монорепа + logical_contour B | 🔴 | 🤖→👤 | ⬜ | DR-SAN S1, S2, S4 |
+| **CAN-102** | МИГРАЦИЯ.md: Контур Б и Progressive Contour Separation | Переписать под логический контур; изоляция после Этапа 7 | 🔴 | 🤖→👤 | ⬜ | DR-SAN S1, S2, S7 |
+| **CAN-103** | TASKS.md: MIG-014 и связанные строки | Монорепная модель (apps/san/, GitHub Environments), Этап 7 | 🟠 | 🤖→👤 | ⬜ | DR-SAN S4, S7 |
+| **CAN-104** | САН.md: схема ПДн-изоляции без отдельной org | Environments, secrets, CODEOWNERS, RF gateway, audit trail | 🟠 | 🤖→👤 | ⬜ | DR-SAN S3, S5 |
+| **CAN-105** | AGENTS.md: политика ИИ-аккаунта | ALTERNATE EMAIL, risk-accepted full admin, redaction gate | 🟠 | 🤖→👤 | ⬜ | DR-SAN S6 |
+| **CAN-106** | Реестры: contour B в domains-graph/identity | logical_contour: B, pii_boundary: rf_gateway | 🟡 | 🤖→👤 | ⬜ | DR-SAN S2 |
 
 ---
 
@@ -95,7 +157,7 @@
 | **PROC-002** | Роль «Хранитель графа» | Описать роль ИИ-агента в `AGENTS.md` (Протокол 016.5) | 🟠 | 🤖→👤 | ✅ | Роль описана в AGENTS.md (Протокол 016.5) |
 | **INFRA-005** | Актуализация данных после сброса | Отразить реальное состояние репо/сайтов в `docs/manifests.yaml` | 🔴 | 🤖→👤 | ✅ | Данные синхронизированы sync-manifests; подтверждено VERIFY-002/003 |
 | **SEC-001** | Аудит Secrets после сброса | Проверить уцелевшие секреты, скомпрометированные — ротировать | 🔴 | 👤 | ⬜ | Требует доступа Основателя |
-| **ORG-001** | Верификация `can-secure-dev` | Проверить, что org пуста; подготовить к Этапу 2 САН | 🟡 | 👤 | ⬜ | ПДн-контур, 152-ФЗ |
+| **ORG-001** | Верификация `can-secure-dev` | Проверить, что org пуста; подготовить к Этапу 2 САН | 🟡 | 👤 | ❌ | Отменено (DR-SAN S1): отдельная org не создаётся; контур B — логический в монорепе |
 | **PROC-001** | Автовалидация `TASKS.md` | В `manifest-consistency-check.yml`: у активных задач есть статус, у закрытых — результат | 🟠 | 🤖→👤 | ✅ | check_tasks_registry.py + шаг в manifest-consistency-check.yml |
 | **VERIFY-001** | Верификация существующих скриптов | Проверить 10 `.py` файлов из `/scripts/` | 🔴 | 🤖→👤 | ✅ | Статус в Реестре |
 | **VERIFY-002** | Верификация существующих workflows | Проверить 13 `.yml` из `.github/workflows/` | 🔴 | 🤖→👤 | ✅ | Статус в Реестре |
@@ -139,7 +201,7 @@
 | **INFRA-048** | Hardening E2E (канонический www, ретраи, 429-skip) + дизайн-решения миграции | Объединён с INFRA-047; ПДн-формы, артефакты СУМКа, apex www | 🟡 | → | ✅ | В составе INFRA-047 |
 | **INFRA-049** | Проверить apex TLS/редирект blagorussia.ru | E2E попал на apex с просроченным cert; канонический www валиден; настроить apex-редирект | 🟡 | | 🔄 | Не отказ: www работает |
 | **INFRA-050** | Реестр артефактов СУМКа → shared-assets | docs/migration/SUMKA-MAPPING.md; mobile-first, JSON-LD, image sanitization и др. | 🟡 | → | ✅ | Этот PR |
-| **INFRA-035** | Изоляция контура B (152-ФЗ) | Отдельные secrets + перенос can.blagorussia.ru на отдельный аккаунт | 🟡 | → | ⬜ | Этап 7 миграции, после финальной проверки 14 сайтов |
+| **INFRA-035** | Изоляция контура B (152-ФЗ) | Логический контур B в монорепе: GitHub Environments + protected secrets + RF gateway (без отдельной org) | 🟡 | → | ⬜ | DR-SAN S2/S5/S7: после финальной проверки сайтов (Этап 7) |
 | **INFRA-036** | Тесты pytest + Playwright E2E + snapshot-тесты | Unit-тесты скриптов, E2E для 14 доменов, snapshot STATUS.md | 🟡 | → | ✅ | Этот PR |
 | **INFRA-037** | Правило MSYS/Python в AGENTS.md (секция 1.5) + hotfix markdown-lint | Зафиксировать эмпирическое правило + починить MD028/MD060/MD012/MD031 | 🟡 | → | ✅ | Закрыт PR 228+230 |
 | **INFRA-039** | Удалить FETCH_HEAD из main + защита .gitignore | Артефакт git pull попал в репозиторий из-за сбоя force push | 🔴 | → | ✅ | Закрыт PR 232 |
@@ -150,9 +212,9 @@
 | **INFRA-044** | Сверка Фазы 0 + PROC-001 (автовалидация TASKS.md) | Дедупликация LIC-001, статусы LIC-002/003/PROC-002/INFRA-005 → ✅, check_tasks_registry.py | 🟡 | → | ✅ | Закрыт PR 252 |
 | **INFRA-045** | Удаление легаси корневого STATUS.md | Дубликат docs/STATUS.md; workflow работает только с docs/ | 🟡 | → | ✅ | Закрыт PR 254 |
 | **INFRA-107** | Разработка `image_sanitizer.py` (Pipeline 5 этапов) | EXIF strip → WebP → Resize ≤1600px → pHash → Watermark | 🔴 BLOCKER | 🤖→ | ⬜ | Критично для Blogger безлимита |
-| **INFRA-108** | Настройка Blogger Gallery (`gallery.obrazslov.ru`) | Создание блога, привязка CNAME, получение API Key | 🔴 BLOCKER | 👤 | ⬜ | Источник правды для изображений |
-| **INFRA-109** | Скрипт `upload_to_blogger.py` + интеграция с API | Автоматизация загрузки sanitized-файлов | 🔴 BLOCKER | 🤖→ | ⬜ | Зависит от INFRA-107, 108 |
-| **INFRA-110** | Конфиг `image_storage_routing.json` в shared-assets | Маршрутизация типов файлов (Blogger/R2/Git) | 🟡 HIGH | → | ⬜ | Единый источник правил хранения |
+| **INFRA-108** | Настройка Blogger Gallery (`gallery.obrazslov.ru`) | Создание блога, привязка CNAME, получение API Key | 🔴 BLOCKER | 👤 | ❌ | Отменено (DR-MEDIA M1/M3): gallery удалён из архитектуры; новые изображения — только R2 |
+| **INFRA-109** | Скрипт `upload_to_blogger.py` + интеграция с API | Автоматизация загрузки sanitized-файлов | 🔴 BLOCKER | 🤖→ | ❌ | Отменено (DR-MEDIA M3): новые загрузки в Blogger запрещены; загрузка — в R2 (MEDIA-002) |
+| **INFRA-110** | Конфиг `image_storage_routing.json` в shared-assets | Маршрутизация типов файлов (Blogger preserve легаси / R2 новые / Git) | 🟡 HIGH | → | ⬜ | DR-MEDIA M2/M3: единый источник правил хранения |
 | **INFRA-111** | Обновление шорткода `img.html` (srcset, lazy load) | Поддержка 4 размеров, fetchpriority для Hero | 🔴 BLOCKER | 🤖→👤 | ⬜ | Core Web Vitals LCP |
 | **INFRA-112** | Внедрение `design-tokens.css` и базовой типографики | CSS-переменные цветов и шрифтов PT Sans/Serif | 🟡 HIGH | →👤 | ⬜ | Единый стандарт фронтенда |
 | **INFRA-113** | Реализация `CookieConsent.js` и `footer-legal.html` | Юридическое требование 152-ФЗ и ЛИЦ | 🔴 BLOCKER | 🤖→ | ⬜ | Обязательный компонент футера |
@@ -178,7 +240,7 @@
 | **MIG-010** | Миграция ideologia.obrazslov.ru | Hugo, тексты | 🟡 | → | ⬜ | Этап 3 |
 | **MIG-011** | Миграция nasa-istoria.blagorussia.ru (Наша история) | Hugo; ПДн-формы → Yandex Forms | 🟡 | → | ⬜ | Этап 3 |
 | **MIG-012** | Миграция grekpanteon.obrazslov.ru | Astro, пантеон (САМ §1.3) | 🟡 | → | ⬜ | Этап 3 |
-| **MIG-013** | Миграция gallery.obrazslov.ru | Blogger, фотоархив (платформа не меняется); репозиторий gallery-npo под пайплайны | 🟡 | → | ⬜ | Этап 4 |
+| **MIG-013** | Миграция gallery.obrazslov.ru | Blogger, фотоархив (платформа не меняется); репозиторий gallery-npo под пайплайны | 🟡 | → | ❌ | Отменено (DR-MEDIA M1): gallery удалён из активной архитектуры |
 | **MIG-014** | Миграция can.blagorussia.ru (САН) | Next.js/Vercel; вместе со всеми сайтами; изоляция — после Этапа 6 | 🟡 | → | ⬜ | Этап 3 |
 
 ---
@@ -190,10 +252,10 @@
 | **MIG-015** | Спасение контента 11 RSS | Перепарсинг живых Blogger-сайтов, бэкап в R2/YOS (0 ₽) | 🟠 | 🤖→👤 | ⬜ | Пока контент жив |
 | **MIG-016** | Спасение контента Пантеона | Перепарсинг ~350 страниц + синхронизация с Google Таблицей | 🟠 | 🤖→👤 | ⬜ | Источник — живая Таблица |
 | **MIG-017** | Image Sanitization Pipeline | 5 этапов: скачивание оригинала (снятие размерного суффикса Blogger URL), EXIF-очистка, WebP, 4 размера 400–1600px, ресайз ≤1600px для безлимита Blogger | 🟠 | 🤖→👤 | ⬜ | Централизованный компонент |
-| **MIG-018** | Оформление gallery | Контент, `ImageGallery`, `FAQPage`, блок «Раскрытие интересов» | 🟡 | 🤖→👤 | ⬜ | Сейчас пуст |
+| **MIG-018** | Оформление gallery | Контент, `ImageGallery`, `FAQPage`, блок «Раскрытие интересов» | 🟡 | 🤖→👤 | ❌ | Отменено (DR-MEDIA M1): gallery удалён из активной архитектуры |
 | **MIG-019** | Миграция 11 RSS на Hugo | Парсинг → Hugo → GitHub Pages → DNS → 301 | 🟡 | 🤖→👤 | ⬜ | После Фазы 1 |
 | **MIG-020** | Пантеон: Этап 1 → Этап 2 | Статический дамп (Hugo) → Astro + YOS/DuckDB | 🟡 | 🤖→👤 | ⬜ | 350 → 16 505 страниц поэтапно |
-| **MIG-022** | САН: витрина → Next.js | Статическая заглушка (без ПДн) → `can-secure-dev`/Vercel | 🟢 | 🤖→👤 | ❌ | Отменено: план САН изменён на Hugo (см. STRATEGY.md) |
+| **MIG-022** | САН: витрина → Next.js | Статическая заглушка (без ПДн) → монорепа apps/san/ (Vercel/Supabase через Environments) | 🟢 | 🤖→👤 | ❌ | Отменено (DR-SAN S8): прямой переход в отдельный can-secure-dev отменён; монорепная поэтапная модель (Hugo этап 1 → dynamic этап 2+), см. STRATEGY.md |
 | **UIX-001** | Интерактив: стратегия деградации | Этап 1: комментарии в архиве, формы через Formspree; Этап 2+: анонимизация ПДн | 🟡 | 🤖→👤 | ⬜ | 152-ФЗ |
 
 ---
