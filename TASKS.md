@@ -235,7 +235,7 @@
 | `.github/workflows/update-manifest-dates.yml` | САМ | ✅ Проверено (VERIFY-001/002/003) | VERIFY-002 | ✅ Да |
 | `.github/workflows/update-status.yml` | САМ | ✅ Проверено (VERIFY-001/002/003) | VERIFY-002 | ✅ Да |
 | `.github/PULL_REQUEST_TEMPLATE.md` | AGENTS | ✅ Проверено (VERIFY-001/002/003) | VERIFY-003 | ✅ Да |
-| `docs/manifests.yaml` | САМ/README | ✅ Проверено (VERIFY-001/002/003) | VERIFY-003 | ✅ Да |
+| `docs/manifests.yaml` | САМ/README | ✅ Проверено (VERIFY-001/002/003) в legacy; superseded in sanitized by manifests/registry/manifests.yaml (REG-015), отсутствует в public/main | VERIFY-003 / REG-015 | ✅ Да |
 | `docs/STATUS.md` | САМ/МИГРАЦИЯ/СУМКа | ✅ Проверено (VERIFY-001/002/003) | VERIFY-003 | ✅ Да |
 | `.cursorrules` | САМ | ✅ Проверено (VERIFY-001/002/003) | VERIFY-003 | ✅ Да |
 | `.markdownlint-cli2.jsonc` | INFRA | ✅ Проверено (VERIFY-001/002/003) | VERIFY-003 | ✅ Да |
@@ -350,7 +350,7 @@
 
 1. Закрыт протокол (смержен PR) → ИИ-агент обновляет `TASKS.md` (статусы, Реестр артефактов).
 2. Человек-подтверждение (Основатель) проверяет и фиксирует.
-3. Автосинхронизация в `STATUS.md`, `docs/manifests.yaml`, `README.md`.
+3. Автосинхронизация в `STATUS.md`, `manifests/registry/manifests.yaml`, `README.md`.
 
 ## Дизайн-система и финализация пилота (INFRA-074–100)
 
